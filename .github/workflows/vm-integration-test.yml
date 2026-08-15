@@ -211,7 +211,7 @@ jobs:
             results.push({ case: 'upstream-429', status: rateLimited.response.status, passed: true });
 
             const invalid = await lookup('https://example.com/not-tiktok');
-            assert.equal(invalid.response.status, 400);
+            assert.equal(invalid.response.status, 422);
             assert.equal(invalid.body.errors[0].code, 'invalid_input');
             results.push({ case: 'invalid-input', status: invalid.response.status, passed: true });
 
