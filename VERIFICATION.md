@@ -2,119 +2,143 @@
 
 Date: 2026-08-15
 
-This ledger separates checks that actually ran in the artifact environment from checks that still require a normal npm installation.
+This ledger distinguishes structural checks, official package-backed checks, production-server smoke tests, and capabilities that still lack live TikTok evidence.
 
-## Passed in this environment
+## Final clean VM verification
 
-### Source integrity
+The committed repository was verified by the repeatable GitHub Actions workflow at `.github/workflows/vm-integration-test.yml`.
 
-- strict TypeScript analysis passed across the complete source tree using TypeScript 5.8.3 and temporary ambient declarations for unavailable third-party packages
-- 60 TypeScript/TSX implementation files passed syntax transpilation
-- 136 local relative and `@/` imports resolved to real files
-- all JSON configuration files parsed successfully
-- all SVG assets parsed as XML
-- all local Markdown links resolved
-- no unresolved `TODO`, `FIXME`, `XXX`, or `HACK` markers were found outside intentionally labeled screenshot placeholders
-- no production source file contained an obvious literal value assigned to a known TikTok credential field; the only matches were synthetic test values
+- Workflow run: [VM integration test #7](https://github.com/hjdfgsgfjshdgfds/tiktok-api/actions/runs/31907135088)
+- Tested commit: `38d0aea13a601a28621484fca7e1c045deb8a6e1`
+- Runner: fresh GitHub-hosted Ubuntu 24.04.4 VM
+- Node.js: 22.23.2
+- npm: 10.9.8
+- Lookup mode: `mock`
+- Workflow permissions: repository contents read-only
 
-### Executable dependency-shim test run
+The workflow checked out an untouched copy of the committed tree and ran:
 
-All 59 authored test cases executed and passed against the actual transpiled `lib/` modules. The temporary harness supplied narrow runtime shims for Zod, `json-bigint`, `server-only`, and the subset of Vitest APIs used by the test files.
+```bash
+npm ci --no-audit --no-fund
+npm run format:check
+npm run lint
+npm run typecheck
+npm run test -- --reporter=verbose
+npm run build
+npm run start
+```
 
-Covered behavior included:
+Every step passed.
 
-1. username, URL, explicit-ID, and ambiguous numeric-ID parsing
-2. exact 19-digit preservation, including unquoted upstream JSON integers
-3. unsupported-domain, short-link, embedded-credential, malformed-escape, and command-input rejection
-4. exact profile, username, Aweme, and expected-author validation
-5. empty, malformed, wrong-target, 403, 429, and timeout responses
-6. legacy unencoded query ordering and signer target-boundary validation
-7. cooldown behavior, environment validation, and lookup-budget bounds
-8. recursive secret redaction, signed URL cleanup, and media-host policy
-9. exact avatar/cover provenance and conservative playback exposure
-10. rate limiting, abortable delays, and every mock success/failure flow
+### Official test results
 
-The expanded run found one real ordering defect: endpoint-specific legacy parameters were placed before the common app/device parameters. The implementation was corrected so endpoint parameters retain caller order after common parameters and before `_rticket`/`ts`; all 59 cases then passed.
+Vitest ran against the real installed dependencies rather than compatibility shims:
 
-A separate orchestrator smoke harness also passed profile lookup, Aweme lookup, target-missing retries, numeric-ID fallback, raw-data sanitization, provenance, and abort-to-timeout mapping.
+- 10 test files passed
+- 59 tests passed
+- no failed or skipped test cases
 
-### API route harness
+The suite covers input parsing, 19-digit ID preservation, exact target matching, author validation, malformed responses, HTTP 403/429 handling, cooldowns, timeouts, redaction, signed-URL sanitization, provenance, and all mock lookup states.
 
-A route-level harness executed the actual transpiled App Router handlers with narrow Next.js request/response shims. It passed:
+### Production build
 
-- `GET /api/health`, including safe capability reporting
-- a valid `POST /api/lookup`, including request-ID propagation and the normalized response envelope
-- invalid JSON rejection with HTTP 400
-- oversized request-body rejection with HTTP 400
-- IP rate-limit enforcement with HTTP 429
+Next.js 15.5.21 produced an optimized production build successfully.
 
-The route harness validates the authored handler behavior, but it is not a substitute for starting a real Next.js server.
+Generated application routes:
 
-The shim run exercises project logic but is not represented as an official Vitest run because the real packages were unavailable.
+```text
+/             dynamic application page
+/api/health   dynamic route handler
+/api/lookup   dynamic route handler
+```
 
-### Static visual QA
+The main application route measured 7.11 kB with 110 kB first-load JavaScript in this build.
 
-A static harness using the actual component class names and compiled project stylesheet was rendered with system Chromium through Playwright at:
+### Running-server smoke test
+
+The workflow started the built application with `npm run start`. The Next.js production server became ready in 351 ms and was exercised through real HTTP requests on the VM.
+
+All smoke cases passed:
+
+| Case | Expected HTTP status | Result |
+| --- | ---: | --- |
+| Rendered homepage contains the product identity | 200 | Passed |
+| Health endpoint reports valid mock configuration | 200 | Passed |
+| Successful profile lookup | 200 | Passed |
+| Successful Aweme lookup with sanitized raw data | 200 | Passed |
+| Private profile omits unavailable `secUid` | 200 | Passed |
+| Partial result exposes its warning state | 200 | Passed |
+| Exact target missing after two bounded attempts | 404 | Passed |
+| Malformed upstream response | 502 | Passed |
+| Simulated upstream rate limit | 429 | Passed |
+| Unsupported non-TikTok URL | 422 | Passed |
+
+The Aweme smoke case also verified that the exact 19-digit ID survived in sanitized raw output and that synthetic secret markers were absent.
+
+### VM evidence artifact
+
+The successful run uploaded `aweme-lens-vm-test-evidence`, containing:
+
+- `vm-server.log`
+- `vm-health.json`
+- `vm-home.html`
+- `vm-smoke-results.json`
+
+Artifact ID: `9252659736`
+
+Artifact SHA-256:
+
+```text
+db8f7d9a4d17d2f68b561225455ea84ef748d38a47eca43112abe8cdc1bed649
+```
+
+GitHub retains this workflow artifact for seven days from the run date.
+
+## Defects found and corrected during VM verification
+
+The clean-VM process found issues that the earlier dependency-limited analysis could not prove:
+
+1. The initial source tree did not pass its declared Prettier check. The repository was formatted and the formatted source was committed.
+2. A helper named `useValue` was incorrectly treated as a React hook by ESLint. It was renamed to `selectValue`.
+3. An unused `coverVariants` local and an unused `isRecord` import were removed.
+4. Next.js generated a triple-slash declaration in `next-env.d.ts`; the generated declaration file is now excluded from ESLint while remaining available to TypeScript.
+5. The integration smoke test was aligned with the route's intentional `422 unsupported_input` contract for unsupported domains.
+6. A real `package-lock.json` was generated from resolved dependencies and committed, allowing repeatable `npm ci` verification.
+
+A subsequent clean run passed without changing or patching source files inside CI.
+
+## Earlier structural and visual checks
+
+Before npm connectivity was available, the source also passed:
+
+- strict TypeScript-oriented structural analysis with temporary ambient declarations
+- syntax transpilation of 60 TypeScript/TSX implementation files
+- resolution of 136 local relative and `@/` imports
+- JSON and SVG parsing
+- local Markdown-link validation
+- secret-pattern inspection
+- dependency-shim execution of all 59 authored cases
+- a route-handler compatibility harness
+
+Static Chromium QA was performed at:
 
 - desktop: 1440 × 1200
 - mobile: 390 × 844
 
-Reviewed surfaces:
+That pass reviewed the empty state, validated Aweme result, header, footer, lookup control, metrics, regions, music, provenance, raw-data disclosure, and responsive collapse. It found and corrected a mobile metric-grid defect.
 
-- empty/home state
-- validated Aweme result
-- header and footer
-- main lookup control
-- result identity, metrics, regions, music, provenance, and raw-data disclosure
-- desktop-to-mobile collapse
+The final VM smoke test verifies server-rendered homepage output and application APIs; it is not represented as a full browser-driven interaction or pixel-comparison test.
 
-One responsive defect found during this pass was fixed: an odd fifth metric no longer leaves a false blank grid cell on mobile.
+## Remaining evidence boundary
 
-The rendered PNGs were retained with the build artifact during QA but are not committed to the GitHub publication tree, keeping the source repository text-first and avoiding unnecessary binary weight. The repository includes labeled SVG screenshot placeholders under `docs/screenshots/` for future real deployment captures.
+The application is fully installable, buildable, testable, and runnable in mock mode.
 
-## Could not run here
+The VM run does **not** establish that current live TikTok mobile endpoints or signatures work. The connected repositories still do not provide a current, licensed, self-contained, end-to-end implementation of the modern `api16-normal-useast5.tiktokv.us/aweme/v1/feed/?aweme_id=...` request. Legacy-live mode therefore remains experimental and requires an operator-controlled signer bridge and device context.
 
-The environment could not reach the npm registry. Both an installation attempt and a direct package metadata request timed out. Consequently, the following commands were **not** represented as passing:
-
-```bash
-npm install
-npm run format:check
-npm run lint
-npm run typecheck
-npm run test
-npm run build
-```
-
-There is intentionally no generated `package-lock.json`; producing one without resolving the declared versions would be misleading.
-
-## Required first networked verification
-
-From the repository root in an environment with npm access:
-
-```bash
-npm install
-npm run check
-npm run build
-npm run dev
-```
-
-Then verify these routes:
-
-```text
-GET  /api/health
-POST /api/lookup
-```
-
-Recommended manual smoke inputs are listed in `README.md`. Commit the reviewed `package-lock.json` produced by the successful installation.
+Story lookup, account-origin or locked-region claims, current image-post geofencing, and other unsupported capabilities remain disabled rather than fabricated.
 
 ## Verification conclusion
 
-The source is structurally complete, all 59 authored cases pass against the transpiled project logic in the dependency-shim runtime, and the responsive design passed static Chromium inspection. A real npm installation, official Vitest/ESLint/Prettier execution, and Next production build remain required before claiming a fully verified deployment artifact.
+The committed project now passes a real locked dependency install, Prettier, ESLint, strict TypeScript checking, all 59 official Vitest cases, a Next.js production build, production-server startup, homepage rendering, health checks, and ten end-to-end HTTP smoke scenarios in a clean Ubuntu VM.
 
-## Publication evidence update
-
-Before the GitHub publication commit, the additional repositories
-`huaerxiela/douyin-algorithm` and `edwinjson/tiktok-api` were inspected. This changed
-only documentation and the evidence-panel description for the unsupported modern
-endpoint. No external signing source or secret-bearing example was copied into the
-application.
+This supports a strong deployment-readiness claim for **mock mode**. Live TikTok compatibility remains explicitly unverified and isolated behind experimental configuration.
