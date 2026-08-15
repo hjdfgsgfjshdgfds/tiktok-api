@@ -1,0 +1,203 @@
+name: VM integration test
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vm-test:
+    name: Ubuntu VM — install, check, build, and smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      LOOKUP_MODE: mock
+      ALLOW_RAW_VIEWER: 'true'
+      LOOKUP_BUDGET_MS: '45000'
+      REQUEST_TIMEOUT_MS: '8000'
+      TARGET_MISSING_RETRIES: '1'
+      RATE_LIMIT_MAX: '100'
+      RATE_LIMIT_WINDOW_SECONDS: '60'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Record VM and runtime information
+        run: |
+          uname -a
+          node --version
+          npm --version
+
+      - name: Install pinned dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run TypeScript checks
+        run: npm run typecheck
+
+      - name: Run Vitest suite
+        run: npm run test -- --reporter=verbose
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Start production server and exercise UI plus API
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          npm run start > vm-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/api/health > vm-health.json; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$ready" != 'true' ]; then
+            echo 'Production server did not become ready.'
+            cat vm-server.log
+            exit 1
+          fi
+
+          curl --fail --silent --show-error http://127.0.0.1:3000/ > vm-home.html
+
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+
+          const baseUrl = 'http://127.0.0.1:3000';
+          const results = [];
+
+          async function requestJson(path, init) {
+            const response = await fetch(`${baseUrl}${path}`, init);
+            const body = await response.json();
+            return { response, body };
+          }
+
+          async function lookup(query, includeRaw = false) {
+            return requestJson('/api/lookup', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ query, includeRaw }),
+            });
+          }
+
+          (async () => {
+            const homeResponse = await fetch(`${baseUrl}/`);
+            const home = await homeResponse.text();
+            assert.equal(homeResponse.status, 200);
+            assert.match(home, /Aweme Lens/);
+            assert.match(home, /TikTok profile and post inspector/i);
+            results.push({ case: 'home', status: homeResponse.status, passed: true });
+
+            const health = await requestJson('/api/health');
+            assert.equal(health.response.status, 200);
+            assert.equal(health.body.ok, true);
+            assert.equal(health.body.mode, 'mock');
+            assert.equal(health.body.configurationValid, true);
+            results.push({ case: 'health', status: health.response.status, passed: true });
+
+            const profile = await lookup('@example', true);
+            assert.equal(profile.response.status, 200);
+            assert.equal(profile.body.ok, true);
+            assert.equal(profile.body.entity.type, 'profile');
+            assert.equal(profile.body.data.username, 'example');
+            assert.equal(profile.body.data.userId, '6800000000000000001');
+            assert.ok(Array.isArray(profile.body.fields) && profile.body.fields.length > 0);
+            results.push({ case: 'profile', status: profile.response.status, passed: true });
+
+            const post = await lookup(
+              'https://www.tiktok.com/@example/video/7399999999999999991',
+              true,
+            );
+            assert.equal(post.response.status, 200);
+            assert.equal(post.body.ok, true);
+            assert.equal(post.body.entity.type, 'post');
+            assert.equal(post.body.data.awemeId, '7399999999999999991');
+            const raw = JSON.stringify(post.body.raw);
+            assert.match(raw, /7399999999999999991/);
+            assert.doesNotMatch(raw, /fake-secret|fake-token/);
+            results.push({ case: 'post-and-redaction', status: post.response.status, passed: true });
+
+            const privateProfile = await lookup('@private');
+            assert.equal(privateProfile.response.status, 200);
+            assert.equal(privateProfile.body.data.privateAccount, true);
+            assert.equal(
+              privateProfile.body.fields.some((field) => field.label === 'secUid'),
+              false,
+            );
+            results.push({ case: 'private-profile', status: privateProfile.response.status, passed: true });
+
+            const partial = await lookup('aweme:7399999999999999997');
+            assert.equal(partial.response.status, 200);
+            assert.equal(partial.body.meta.validationStatus, 'partial');
+            assert.equal(
+              partial.body.warnings.some((warning) => warning.code === 'partial_post'),
+              true,
+            );
+            results.push({ case: 'partial-result', status: partial.response.status, passed: true });
+
+            const missing = await lookup('aweme:7399999999999999992');
+            assert.equal(missing.response.status, 404);
+            assert.equal(missing.body.ok, false);
+            assert.equal(missing.body.errors[0].code, 'target_missing');
+            assert.equal(missing.body.meta.attemptCount, 2);
+            results.push({ case: 'target-missing', status: missing.response.status, passed: true });
+
+            const malformed = await lookup('aweme:7399999999999999993');
+            assert.equal(malformed.response.status, 502);
+            assert.equal(malformed.body.errors[0].code, 'upstream_malformed');
+            results.push({ case: 'malformed-upstream', status: malformed.response.status, passed: true });
+
+            const rateLimited = await lookup('aweme:7399999999999999995');
+            assert.equal(rateLimited.response.status, 429);
+            assert.equal(rateLimited.body.errors[0].code, 'upstream_rate_limited');
+            results.push({ case: 'upstream-429', status: rateLimited.response.status, passed: true });
+
+            const invalid = await lookup('https://example.com/not-tiktok');
+            assert.equal(invalid.response.status, 400);
+            assert.equal(invalid.body.errors[0].code, 'invalid_input');
+            results.push({ case: 'invalid-input', status: invalid.response.status, passed: true });
+
+            fs.writeFileSync('vm-smoke-results.json', `${JSON.stringify(results, null, 2)}\n`);
+            console.log(JSON.stringify(results, null, 2));
+          })().catch((error) => {
+            console.error(error);
+            process.exitCode = 1;
+          });
+          NODE
+
+      - name: Upload VM test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aweme-lens-vm-test-evidence
+          path: |
+            vm-server.log
+            vm-health.json
+            vm-home.html
+            vm-smoke-results.json
+          if-no-files-found: warn
+          retention-days: 7
