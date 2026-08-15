@@ -1,0 +1,400 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-15T00:00:00Z",
+  "notes": [
+    "Identifiers must remain strings.",
+    "Source-backed does not mean currently live.",
+    "Third-party wrappers must not be tested without authorization.",
+    "No secret, cookie, session, device identifier, signature, or signed CDN value belongs in this file."
+  ],
+  "endpoints": [
+    {
+      "id": "omar.wrapper.profile.test",
+      "surface": "third-party-wrapper",
+      "method": "POST",
+      "host": "for.omar-thing.site",
+      "path": "/test",
+      "input": ["username", "ts"],
+      "headers": ["content-type", "x-app-ts", "x-app-token"],
+      "status": "wrapper-only",
+      "liveTestPolicy": "authorization-required",
+      "evidence": [{
+        "repository": "AyGemuy/api-wudysoft",
+        "commit": "c1c03171068d5f5b37d9fcb38a5b0549f725adf3",
+        "file": "pages/api/stalker/tiktok/v8.js"
+      }]
+    },
+    {
+      "id": "omar.wrapper.profile.hello",
+      "surface": "third-party-wrapper",
+      "method": "POST",
+      "host": "nodejs-serverless-function-express-ivory-ten.vercel.app",
+      "path": "/api/hello",
+      "input": ["username"],
+      "observedResponseFields": ["userId", "nickname", "avatar", "stats", "accountCreated", "nicknameModified"],
+      "status": "wrapper-only",
+      "liveTestPolicy": "authorization-required",
+      "evidence": [{
+        "repository": "Hisham3150/Tiktoknew",
+        "commit": "0b5c01663d9acd043354acbc04b83359e64c2f0a",
+        "file": "tiktoknew2.py"
+      }]
+    },
+    {
+      "id": "omar.wrapper.following",
+      "surface": "third-party-wrapper",
+      "method": "POST",
+      "host": "nodejs-serverless-function-express-ivory-ten.vercel.app",
+      "path": "/api/following",
+      "input": ["secUid", "userId", "cursor"],
+      "observedResponseFields": ["userList"],
+      "status": "wrapper-only",
+      "liveTestPolicy": "authorization-required",
+      "evidence": [{
+        "repository": "AyGemuy/api-wudysoft",
+        "commit": "c1c03171068d5f5b37d9fcb38a5b0549f725adf3",
+        "file": "pages/api/stalker/tiktok/v8.js"
+      }]
+    },
+    {
+      "id": "omar.wrapper.profile.nopean",
+      "surface": "third-party-wrapper",
+      "method": "POST",
+      "host": "nopean.click",
+      "path": "/",
+      "input": ["username"],
+      "status": "historical",
+      "liveTestPolicy": "authorization-required",
+      "evidence": [{
+        "repository": "hippiiee/Hippie-OSINT-Toolkit",
+        "commit": "7a7e97848a6c450111aa1072b6037f56b543c2ae",
+        "file": "backend/social_networks/tiktok/tiktok_module.py"
+      }]
+    },
+    {
+      "id": "tiktok.web.user.detail",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/user/detail/",
+      "input": ["uniqueId", "secUid", "msToken"],
+      "targetValidation": "userInfo.user.uniqueId must exactly match the requested username",
+      "status": "source-backed",
+      "liveTestPolicy": "low-rate-public-read-only",
+      "evidence": [{
+        "repository": "davidteather/TikTok-Api",
+        "file": "TikTokApi/api/user.py"
+      }]
+    },
+    {
+      "id": "tiktok.web.user.posts",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/post/item_list/",
+      "input": ["secUid", "count", "cursor"],
+      "targetValidation": "each returned author/secUid must be consistent with the requested user",
+      "status": "source-backed",
+      "liveTestPolicy": "low-rate-public-read-only",
+      "evidence": [{
+        "repository": "davidteather/TikTok-Api",
+        "file": "TikTokApi/api/user.py"
+      }, {
+        "repository": "TobyG74/tiktok-api-dl",
+        "commit": "cbe40b6f0c8bbbec8e6124be2a28dd7153b71192",
+        "file": "src/constants/api.ts"
+      }]
+    },
+    {
+      "id": "tiktok.web.user.reposts",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/repost/item_list/",
+      "input": ["secUid", "count", "cursor"],
+      "targetValidation": "the requested secUid must be preserved and every item ID must be a string",
+      "status": "source-backed",
+      "liveTestPolicy": "low-rate-public-read-only",
+      "evidence": [{
+        "repository": "TobyG74/tiktok-api-dl",
+        "commit": "cbe40b6f0c8bbbec8e6124be2a28dd7153b71192",
+        "file": "src/utils/get/getUserRepost.ts"
+      }]
+    },
+    {
+      "id": "tiktok.web.user.liked",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/favorite/item_list",
+      "input": ["id", "secUid", "count", "cursor"],
+      "status": "source-backed",
+      "liveTestPolicy": "low-rate-public-read-only",
+      "evidence": [{
+        "repository": "davidteather/TikTok-Api",
+        "file": "TikTokApi/api/user.py"
+      }, {
+        "repository": "TobyG74/tiktok-api-dl",
+        "commit": "cbe40b6f0c8bbbec8e6124be2a28dd7153b71192",
+        "file": "src/constants/api.ts"
+      }]
+    },
+    {
+      "id": "tiktok.web.user.playlists",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/user/playlist",
+      "input": ["secUid", "count", "cursor"],
+      "status": "source-backed",
+      "liveTestPolicy": "low-rate-public-read-only",
+      "evidence": [{
+        "repository": "davidteather/TikTok-Api",
+        "file": "TikTokApi/api/user.py"
+      }]
+    },
+    {
+      "id": "tiktok.web.playlist.items",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/mix/item_list/",
+      "input": ["mixId", "count", "cursor"],
+      "status": "source-backed",
+      "liveTestPolicy": "low-rate-public-read-only",
+      "evidence": [{
+        "repository": "TobyG74/tiktok-api-dl",
+        "commit": "cbe40b6f0c8bbbec8e6124be2a28dd7153b71192",
+        "file": "src/constants/api.ts"
+      }]
+    },
+    {
+      "id": "tiktok.web.video.comments",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/comment/list/",
+      "input": ["aweme_id", "count", "cursor"],
+      "targetValidation": "every displayed comment.aweme_id must match the requested Aweme ID when present",
+      "status": "source-backed",
+      "liveTestPolicy": "low-rate-public-read-only",
+      "evidence": [{
+        "repository": "davidteather/TikTok-Api",
+        "file": "TikTokApi/api/video.py"
+      }, {
+        "repository": "TobyG74/tiktok-api-dl",
+        "commit": "cbe40b6f0c8bbbec8e6124be2a28dd7153b71192",
+        "file": "src/constants/api.ts"
+      }]
+    },
+    {
+      "id": "tiktok.web.video.related",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/related/item_list/",
+      "input": ["itemID", "count"],
+      "status": "source-backed",
+      "liveTestPolicy": "low-rate-public-read-only",
+      "evidence": [{
+        "repository": "davidteather/TikTok-Api",
+        "file": "TikTokApi/api/video.py"
+      }]
+    },
+    {
+      "id": "tiktok.web.search.users",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/search/user/full/",
+      "input": ["keyword", "cursor"],
+      "status": "source-backed",
+      "liveTestPolicy": "controlled-read-only-capture-preferred",
+      "evidence": [{
+        "repository": "TobyG74/tiktok-api-dl",
+        "commit": "cbe40b6f0c8bbbec8e6124be2a28dd7153b71192",
+        "file": "src/constants/api.ts"
+      }]
+    },
+    {
+      "id": "tiktok.web.search.videos",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/search/item/full/",
+      "input": ["keyword", "offset", "count"],
+      "status": "source-backed",
+      "liveTestPolicy": "controlled-read-only-capture-preferred",
+      "evidence": [{
+        "repository": "TobyG74/tiktok-api-dl",
+        "commit": "cbe40b6f0c8bbbec8e6124be2a28dd7153b71192",
+        "file": "src/constants/api.ts"
+      }]
+    },
+    {
+      "id": "tiktok.web.search.live",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/search/live/full/",
+      "input": ["keyword", "offset", "count"],
+      "status": "source-backed",
+      "liveTestPolicy": "controlled-read-only-capture-preferred",
+      "evidence": [{
+        "repository": "TobyG74/tiktok-api-dl",
+        "commit": "cbe40b6f0c8bbbec8e6124be2a28dd7153b71192",
+        "file": "src/constants/api.ts"
+      }]
+    },
+    {
+      "id": "tiktok.web.hashtag.items",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/challenge/item_list/",
+      "input": ["challengeID", "count", "cursor"],
+      "status": "source-backed",
+      "liveTestPolicy": "low-rate-public-read-only",
+      "evidence": [{
+        "repository": "TobyG74/tiktok-api-dl",
+        "commit": "cbe40b6f0c8bbbec8e6124be2a28dd7153b71192",
+        "file": "src/constants/api.ts"
+      }]
+    },
+    {
+      "id": "tiktok.web.music.items",
+      "surface": "tiktok-web",
+      "method": "GET",
+      "host": "www.tiktok.com",
+      "path": "/api/music/item_list/",
+      "input": ["musicID", "count", "cursor"],
+      "status": "source-backed",
+      "liveTestPolicy": "low-rate-public-read-only",
+      "evidence": [{
+        "repository": "TobyG74/tiktok-api-dl",
+        "commit": "cbe40b6f0c8bbbec8e6124be2a28dd7153b71192",
+        "file": "src/constants/api.ts"
+      }]
+    },
+    {
+      "id": "tiktok.mobile.user.profile.legacy",
+      "surface": "tiktok-mobile-legacy",
+      "method": "GET",
+      "host": "api2.musical.ly",
+      "path": "/aweme/v1/user/",
+      "input": ["user_id"],
+      "targetValidation": "user.uid must exactly match requested user_id as strings",
+      "status": "historical",
+      "liveTestPolicy": "disabled-unless-authorized-capture",
+      "evidence": [{
+        "repository": "szdc/tiktok-api",
+        "file": "src/index.ts"
+      }]
+    },
+    {
+      "id": "tiktok.mobile.user.posts.legacy",
+      "surface": "tiktok-mobile-legacy",
+      "method": "GET",
+      "host": "api2.musical.ly",
+      "path": "/aweme/v1/aweme/post/",
+      "input": ["user_id", "count", "max_cursor"],
+      "status": "historical",
+      "liveTestPolicy": "disabled-unless-authorized-capture",
+      "evidence": [{
+        "repository": "szdc/tiktok-api",
+        "file": "src/index.ts"
+      }]
+    },
+    {
+      "id": "tiktok.mobile.user.followers.legacy",
+      "surface": "tiktok-mobile-legacy",
+      "method": "GET",
+      "host": "api2.musical.ly",
+      "path": "/aweme/v1/user/follower/list/",
+      "input": ["user_id", "count", "max_time", "min_time"],
+      "status": "historical",
+      "liveTestPolicy": "disabled-unless-authorized-capture",
+      "evidence": [{
+        "repository": "szdc/tiktok-api",
+        "file": "src/index.ts"
+      }]
+    },
+    {
+      "id": "tiktok.mobile.user.following.legacy",
+      "surface": "tiktok-mobile-legacy",
+      "method": "GET",
+      "host": "api2.musical.ly",
+      "path": "/aweme/v1/user/following/list/",
+      "input": ["user_id", "count", "max_time", "min_time"],
+      "status": "historical",
+      "liveTestPolicy": "disabled-unless-authorized-capture",
+      "evidence": [{
+        "repository": "szdc/tiktok-api",
+        "file": "src/index.ts"
+      }]
+    },
+    {
+      "id": "tiktok.mobile.aweme.detail.legacy",
+      "surface": "tiktok-mobile-legacy",
+      "method": "GET",
+      "host": "api2.musical.ly",
+      "path": "/aweme/v1/aweme/detail/",
+      "input": ["aweme_id"],
+      "targetValidation": "aweme_detail.aweme_id must exactly match the requested Aweme ID",
+      "status": "historical",
+      "liveTestPolicy": "disabled-unless-authorized-capture",
+      "evidence": [{
+        "repository": "szdc/tiktok-api",
+        "file": "src/index.ts"
+      }]
+    },
+    {
+      "id": "tiktok.mobile.feed.api16.candidate",
+      "surface": "tiktok-mobile-private",
+      "method": "GET",
+      "host": "api16-normal-useast5.tiktokv.us",
+      "path": "/aweme/v1/feed/",
+      "input": ["aweme_id", "mobile-device-context"],
+      "targetValidation": "search aweme_list for exact requested aweme_id and optional author.uid",
+      "status": "source-backed-unverified",
+      "liveTestPolicy": "authorized-capture-only",
+      "evidence": [{
+        "repository": "TobyG74/tiktok-api-dl",
+        "commit": "cbe40b6f0c8bbbec8e6124be2a28dd7153b71192",
+        "file": "src/constants/api.ts"
+      }, {
+        "repository": "hjdfgsgfjshdgfds/tiktok-api",
+        "file": "docs/ENDPOINTS.md"
+      }]
+    },
+    {
+      "id": "tiktok.story.unknown",
+      "surface": "unknown",
+      "method": null,
+      "host": null,
+      "path": null,
+      "input": ["username-or-user-identifier"],
+      "status": "claim-only",
+      "liveTestPolicy": "capture-required",
+      "evidence": [{
+        "source": "Omar-Thing public story viewer"
+      }]
+    },
+    {
+      "id": "tiktok.account.locked-region.unknown",
+      "surface": "unknown",
+      "method": null,
+      "host": null,
+      "path": null,
+      "input": ["user-identifier"],
+      "status": "claim-only",
+      "liveTestPolicy": "capture-required",
+      "evidence": [{
+        "source": "Omar-Thing public user lookup claim"
+      }],
+      "notes": [
+        "Do not substitute profile region, Aweme region, author region, priority_region, app_country, store country, carrier region, session region, or datacenter context."
+      ]
+    }
+  ]
+}
