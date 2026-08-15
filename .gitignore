@@ -1,17 +1,56 @@
-.idea/
+# dependencies
+/node_modules
 
-# Logs
-logs/
-*.log
+# Next.js
+/.next
+/out
 
-# Dependencies
-node_modules/
+# production
+/build
 
-# Compiled files
-lib/
+# testing
+/coverage
 
-# Build
-*.tgz
+# local environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Coverage
-.nyc_output/
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# editors and OS
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# TypeScript
+*.tsbuildinfo
+
+# Vercel
+.vercel
+
+# secrets and captures
+*.har
+*.pcap
+*.pcapng
+cookies*.txt
+session*.json
+signed-response*.json
+raw-capture*
+
+# credentials and private keys
+*.pem
+*.p12
+*.pfx
+*.key
+*.mobileconfig
+auth-export*
+browser-cookies*
+proxy-credentials*

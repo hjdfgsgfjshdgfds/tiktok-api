@@ -1,668 +1,231 @@
-# Unofficial TikTok/Musical.ly API
+# Aweme Lens
 
-> This project is no longer maintained.
+Aweme Lens is a provenance-first TikTok profile and post inspector built with Next.js, TypeScript, React, Tailwind CSS, Zod, and Vitest. It accepts usernames, profile URLs, TikTok video URLs, numeric user IDs, and numeric Aweme IDs; selects an evidence-backed server adapter; validates the exact requested target; and shows normalized fields alongside their original endpoint and JSON paths.
 
----
+The application is complete and credential-free in **mock mode**. Its **legacy-live mode** is isolated and experimental because the connected endpoint repository contains older request contracts and response types but no current signer. The application does not fabricate current TikTok signing, story lookup, account-origin fields, or a modern `api16` target-feed implementation.
 
-<!-- markdownlint-disable MD013 -->
-[![npm version](https://img.shields.io/npm/v/tiktok-api.svg?style=flat)](https://www.npmjs.com/package/tiktok-api) [![Coverage Status](https://img.shields.io/coveralls/szdc/tiktok-api/master.svg?style=flat)](https://coveralls.io/github/szdc/tiktok-api?branch=master) [![Build Status](https://travis-ci.com/szdc/tiktok-api.svg?branch=master)](https://travis-ci.com/szdc/tiktok-api) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/szdc/tiktok-api/issues) ![Supported TikTok version](https://img.shields.io/badge/TikTok-9.1.0-blue.svg)
-<!-- markdownlint-enable MD013 -->
+![Home screenshot placeholder](docs/screenshots/home-placeholder.svg)
 
-A reverse-engineered implementation of the [TikTok](https://www.tiktok.com/) (previously musical.ly) app's API.
+![Result screenshot placeholder](docs/screenshots/result-placeholder.svg)
 
-## Installation
+## Features
+
+- Username, `@username`, profile URL, video URL, user ID, and Aweme ID parsing
+- Explicit `user:<id>` and `aweme:<id>` prefixes for ambiguous numeric IDs
+- TikTok IDs preserved as strings to prevent JavaScript precision loss
+- Exact username, user-ID, Aweme-ID, and optional author-UID validation
+- Bounded target-missing retries and disclosed numeric fallback
+- Separate profile and Aweme adapters behind one orchestrator
+- Synthetic success, partial, private, missing, malformed, 403, 429, and timeout fixtures
+- Per-field provenance: endpoint, exact upstream path, retrieval time, confidence, origin, and derivation status
+- Searchable and copyable sanitized raw JSON
+- Recursive secret redaction and volatile signed-URL sanitization
+- Request-size limits, timeouts, cooldowns, response caching, and basic IP rate limiting
+- Responsive loading, empty, result, partial, and error states
+- Browser-local recent searches and accessible keyboard navigation
+- `POST /api/lookup` and `GET /api/health`
+
+## Supported inputs
+
+| Input | Example | Resolution |
+|---|---|---|
+| Username | `example` or `@example` | Exact username search, then profile by permanent user ID |
+| Profile URL | `https://www.tiktok.com/@example` | Username lookup |
+| Video URL | `https://www.tiktok.com/@example/video/7399999999999999991` | Exact Aweme lookup |
+| Explicit user ID | `user:6800000000000000001` | Profile lookup |
+| Explicit Aweme ID | `aweme:7399999999999999991` | Post lookup |
+| Bare numeric ID | `7399999999999999991` | Likely type first, exact-target fallback when needed |
+
+Bare numeric IDs are ambiguous because both user IDs and post IDs can be long decimal strings. The API reports fallback attempts rather than silently guessing.
+
+## Architecture
+
+```text
+Browser
+  └── POST /api/lookup
+        ├── request schema and rate validation
+        ├── input parser
+        ├── lookup orchestrator
+        │     ├── profileAdapter
+        │     └── awemeAdapter
+        ├── exact-target validators
+        ├── profile/post normalizers
+        ├── field provenance builder
+        ├── recursive sanitizer
+        └── small in-memory cache
+```
+
+Client components receive normalized responses only. Environment values, cookies, signer interaction, device identifiers, and upstream request code remain in server-only modules. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Repository evidence
+
+The original connected fork, `hjdfgsgfjshdgfds/tiktok-api`, provided legacy evidence for:
+
+- profile, username-search, Aweme-detail, feed, follower, following, and comment paths
+- request parameter ordering
+- response shapes and field names
+- mocked fixtures and endpoint tests
+- `json-bigint` parsing with large integers stored as strings
+
+Its upstream README says it is no longer maintained and targets TikTok 9.1.0-era behavior. It requires a caller-provided `signURL` function plus legacy device values, so the repository does not prove present-day endpoint compatibility.
+
+Two additional repositories were reviewed:
+
+- `huaerxiela/douyin-algorithm` contains older native Douyin signature research. Its README says it is no longer updated, targets Douyin 23.2.0, warns of an SM3 defect, and leaves later signature additions incomplete.
+- `edwinjson/tiktok-api` claims mobile and web signatures, but its checked-in examples import missing modules, its `argus.py` is incomplete decompiler-style code, and examples contain hard-coded authentication/session/proxy material that is unsafe to reuse.
+
+Neither inspected tree supplies a licensed, self-contained, tested implementation of the requested modern target-feed lookup. No code from either additional repository is copied. See [EVIDENCE_REPORT.md](EVIDENCE_REPORT.md), [docs/SIGNING_RESEARCH.md](docs/SIGNING_RESEARCH.md), and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Capability matrix
+
+| Capability | Mock | Legacy-live | Claim |
+|---|---:|---:|---|
+| Username → exact profile | Yes | Experimental | No current compatibility claim |
+| User ID → profile | Yes | Experimental | No current compatibility claim |
+| Video URL / Aweme ID → legacy detail | Yes | Experimental | No current compatibility claim |
+| Exact matching inside `aweme_list` | Tested | Validation utility | No modern target-feed request included |
+| Story lookup | No | No | Unsupported |
+| Modern TikTok signing | No | Operator bridge only | Not included |
+| Locked region/account origin | No | No | Omitted because evidence is absent |
+
+## Local setup
+
+Requirements: Node.js 20.11+ and npm 10+.
 
 ```bash
-npm i tiktok-api
+npm install
+cp .env.example .env.local
+npm run dev
 ```
 
-## Usage
+Open `http://localhost:3000`. `LOOKUP_MODE=mock` is the default and requires no TikTok credentials.
 
-### Creating an instance
+### Useful mock inputs
 
-```js
-import TikTokAPI, { getRequestParams } from 'tiktok-api';
+| Input | Scenario |
+|---|---|
+| `@example` | Successful profile |
+| `@private` | Private profile |
+| `@partial` | Partial profile |
+| `@unavailable` | Target missing |
+| `@malformed` | Malformed upstream response |
+| `@forbidden` | 403-equivalent error |
+| `@ratelimited` | 429-equivalent error |
+| `@timeout` | Timeout |
+| `7399999999999999991` | Successful Aweme |
+| `7399999999999999992` | Target-missing Aweme |
+| `7399999999999999997` | Partial Aweme |
+| `6800000000000000001` | Ambiguous numeric ID resolved to profile |
 
-// Required - a method that signs the URL with anti-spam parameters
-// You must provide an implementation yourself to successfully make
-// most requests with this library.
-const signURL = async (url, ts, deviceId) => {
-  const as = 'anti-spam parameter 1';
-  const cp = 'anti-spam parameter 2'
-  const mas = 'anti-spam parameter 3';
-  return `${url}&as=${as}&cp=${cp}&mas=${mas}`;
+## Experimental legacy-live mode
+
+Legacy-live mode reuses only the old request contract present in the original fork. It is not a current TikTok compatibility guarantee.
+
+```dotenv
+LOOKUP_MODE=legacy-live
+TIKTOK_LEGACY_BASE_URL=https://api2.musical.ly/
+TIKTOK_SIGNER_URL=https://your-server-side-signer.example/sign
+TIKTOK_SIGNER_TOKEN=
+TIKTOK_DEVICE_ID=
+TIKTOK_FP=
+TIKTOK_IID=
+TIKTOK_OPENUDID=
+TIKTOK_COOKIE=
+```
+
+The operator-owned signer bridge receives an unsigned URL, timestamp, and device ID and returns a `signedUrl`. Aweme Lens verifies that the result is HTTPS, contains no embedded credentials, retains the exact host and path, and preserves every required unsigned parameter. It cannot redirect the request to another host or change the target identifier.
+
+## Environment variables
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `LOOKUP_MODE` | `mock` | `mock` or `legacy-live` |
+| `ALLOW_RAW_VIEWER` | `true` | Permit sanitized raw output |
+| `LOOKUP_BUDGET_MS` | `45000` | End-to-end lookup budget |
+| `REQUEST_TIMEOUT_MS` | `8000` | Per-network-call timeout |
+| `TARGET_MISSING_RETRIES` | `1` | Additional exact-target retries |
+| `CACHE_TTL_SECONDS` | `60` | Successful response lifetime |
+| `CACHE_MAX_ENTRIES` | `100` | In-memory cache bound |
+| `RATE_LIMIT_MAX` | `30` | Requests per local limiter window |
+| `RATE_LIMIT_WINDOW_SECONDS` | `60` | Local limiter window |
+| `UPSTREAM_COOLDOWN_SECONDS` | `60` | Cooldown after 403/429 |
+| `TIKTOK_LEGACY_BASE_URL` | legacy host | Fixed legacy upstream base |
+| `TIKTOK_SIGNER_URL` | unset | Server-side signer bridge |
+| `TIKTOK_SIGNER_TOKEN` | unset | Optional bridge credential |
+| `TIKTOK_DEVICE_ID`, `TIKTOK_FP`, `TIKTOK_IID`, `TIKTOK_OPENUDID` | unset | Legacy device context |
+| `TIKTOK_COOKIE` | unset | Optional server-only cookie |
+
+Environment parsing fails closed when live mode is incomplete.
+
+## API
+
+### `POST /api/lookup`
+
+```json
+{
+  "query": "@example",
+  "includeRaw": false
 }
-
-// Required - device parameters
-// You need to source these using a man-in-the-middle proxy such as mitmproxy,
-// CharlesProxy or PacketCapture (Android)
-const params = getRequestParams({
-  device_id: '<device_id>',
-  fp: '<device_fingerprint>',
-  iid: '<install_id>',
-  openudid: '<device_open_udid>',
-});
-
-const api = new TikTokAPI(params, { signURL });
-
-// You are now able to make successful requests
-
 ```
 
-### Instance methods
+Responses include `input`, `entity`, `data`, `fields`, `sources`, `warnings`, `errors`, `retrievedAt`, and metadata such as request ID, adapter, attempt count, validation status, and cache status.
 
-* [.loginWithEmail(email, password)](#loginwithemailemail-password)
-* [.loginWithUsername(username, password)](#loginwithusernameusername-password)
-* [.getUser(id)](#getuserid)
-* [.searchUsers(params)](#searchusersparams)
-* [.getQRCode(id, [schemaType])](#getqrcodeid-schematype)
-* [.getPost(id)](#getpostid)
-* [.listPosts(params)](#listpostsparams)
-* [.listFollowers(params)](#listfollowersparams)
-* [.listFollowing(params)](#listfollowingparams)
-* [.follow(id)](#followid)
-* [.unfollow(id)](#unfollowid)
-* [.listReceivedFollowRequests(params)](#listreceivedfollowrequestsparams)
-* [.approveFollowRequest(id)](#approvefollowrequestid)
-* [.rejectFollowRequest(id)](#rejectfollowrequestid)
-* [.likePost(id)](#likepostid)
-* [.unlikePost(id)](#unlikepostid)
-* [.listComments(params)](#listcommentsparams)
-* [.postComment(postId, text, [tags])](#postcommentpostid-text-tags)
-* [.listCategories(params)](#listcategoriesparams)
-* [.searchHashtags(params)](#searchhashtagsparams)
-* [.listPostsInHashtag(params)](#listpostsinhashtagparams)
-* [.listForYouFeed([params])](#listforyoufeedparams)
-* [.listFollowingFeed([params])](#listfollowingfeedparams)
-* [.getSticker(id)](#getstickerid)
-* [.getStickers([ids])](#getstickersids)
-* [.listPostsBySticker(params)](#listpostsbystickerparams)
-* [.joinLiveStream(id)](#joinlivestreamid)
-* [.leaveLiveStream(id)](#leavelivestreamid)
-* [.canStartLiveStream()](#canstartlivestream)
-* [.startLiveStream(title, [contactsAuthorized])](#startlivestreamtitle-contactsauthorized)
-* [.endLiveStream(roomId, streamId)](#endlivestreamroomid-streamid)
-* [.createLiveStreamRoom(title, [contactsAuthorized])](#createlivestreamroomtitle-contactsauthorized)
-* [.updateLiveStreamStatus(params)](#updatelivestreamstatusparams)
+Status mappings cover invalid input, unsupported input, target missing, authentication failure, rate limiting, timeout, malformed upstream data, and internal error. Stack traces are never returned.
 
-#### .loginWithEmail(email, password)
+### `GET /api/health`
 
-Authenticates you with the API and stores your session data in a cookie jar.
-Subsequent requests will include these cookies.
+Reports application mode and whether live configuration is complete without exposing secret values.
 
-```javascript
-api.loginWithEmail('<email>', '<password>')
-  .then(res => console.log(res.data))
-  .catch(console.log)
+## Commands
 
-// Outputs:
-// { email: '<email>', session_key: '123456', user_id: '123456', ... }
-
+```bash
+npm run dev
+npm run typecheck
+npm run lint
+npm run format:check
+npm test
+npm run check
+npm run build
+npm start
 ```
 
-See the [login types](src/types/login.d.ts) for the response data.
+Tests cover parsing, 19-digit precision, unsupported domains, exact target matching, author validation, malformed and empty responses, cooldowns, redaction, URL sanitization, provenance, environment validation, normalization, and mock lookup flows.
 
-#### .loginWithUsername(username, password)
+## Deployment
 
-Authenticates you with the API and stores your session data in a cookie jar.
-Subsequent requests will include these cookies.
+1. Import this repository into Vercel.
+2. Keep `LOOKUP_MODE=mock` for a credential-free deployment, or configure all legacy-live values in encrypted project settings.
+3. Deploy and verify `/api/health`.
 
-```javascript
-api.loginWithUsername('<username>', '<password>')
-  .then(res => console.log(res.data))
-  .catch(console.log)
+The cache and limiter are intentionally in-memory and per warm serverless instance. Use a trusted shared store for globally consistent high-traffic limits.
 
-// Outputs:
-// { username: '<email>', session_key: '123456', user_id: '123456', ... }
+## Security and provenance
 
-```
+- No arbitrary URL fetching, custom upstream host, custom headers, cookies, proxy, or method override is accepted from the browser.
+- Upstream paths are fixed and redirects are not followed.
+- Signed URLs, cookies, tokens, device values, and signer headers are redacted.
+- Raw viewing is opt-in per request and can be disabled globally.
+- `post.region` and `post.author.region` remain distinct and are never presented as account creation country.
+- Request/session/carrier/store/proxy regions remain request context, not inspected-account origin.
+- Unsupported fields are hidden rather than replaced with plausible placeholders.
 
-See the [login types](src/types/login.d.ts) for the response data.
+See [SECURITY.md](SECURITY.md), [docs/FIELD_PROVENANCE.md](docs/FIELD_PROVENANCE.md), and [docs/RESPONSE_VALIDATION.md](docs/RESPONSE_VALIDATION.md).
 
-#### .getUser(id)
+## Known limitations
 
-Gets a user's profile.
+1. The source endpoint evidence is legacy and its tests are mocked.
+2. No current signer is included.
+3. The modern `api16-normal-useast5.tiktokv.us/aweme/v1/feed/?aweme_id=...` request is documented but hard-disabled because no reproducible implementation was found.
+4. Username lookup may require two requests.
+5. Bare numeric IDs may require a disclosed fallback.
+6. Sanitized signed media URLs may no longer be playable.
+7. Mock fixtures are synthetic and are not live TikTok data.
+8. In-memory limits are per process/function instance.
 
-```javascript
-api.getUser('<user_id>')
-  .then(res => console.log(res.data.user))
-  .catch(console.log);
+## Legal responsibility
 
-// Outputs:
-// { aweme_count: 1000, nickname: 'example', unique_id: 'musername', ... }
+Aweme Lens is an independent research interface, not an official TikTok API. Operators are responsible for applicable law, platform terms, privacy obligations, retention rules, and authorization boundaries. Do not use it to access private data, evade controls, or expose captured authentication material.
 
-```
+## License
 
-See the [user types](src/types/user.d.ts) for the response data.
-
-#### .searchUsers(params)
-
-Searches for users.
-
-```javascript
-api.searchUsers({
-  keyword: 'example',
-  count: 10,
-  cursor: 0,
-})
-  .then(res => console.log(res.data.user_list))
-  .catch(console.log);
-
-// Outputs:
-// [{ user_info: {...}, position: [], uniqposition: [] }, ...]
-
-```
-
-See the [search types](src/types/search.d.ts) for the complete request/response objects.
-
-#### .getQRCode(id, [schemaType])
-
-Gets the QR code for a user.
-
-```javascript
-api.getQRCode('<user_id>')
-  .then(res => console.log(res.data.qrcode_url.url_list[0]))
-  .catch(console.log);
-
-// Outputs:
-// 'http://p16.muscdn.com/img/musically-qrcode/1111111111111111111~c5_720x720.image'
-
-```
-
-See the [QR code types](src/types/qr-code.d.ts) for the complete request/response objects.
-
-#### .getPost(id)
-
-Gets a post.
-
-```javascript
-api.getPost('<user_id>')
-  .then(res => console.log(res.data.aweme_detail))
-  .catch(console.log);
-
-// Outputs:
-// { author: {...}, aweme_id: '999', desc: 'description', music: {...}, statistics: {...}, video: {...}, ... }
-
-```
-
-See the [post types](src/types/post.d.ts) for the complete response object.
-
-#### .listPosts(params)
-
-Lists a user's posts.
-
-```javascript
-api.listPosts({
-  user_id: '<user_id>',
-  max_cursor: 0,
-})
-  .then(res => console.log(res.data.aweme_list))
-  .catch(console.log);
-
-// Outputs:
-// [{ author: {...}, aweme_id: '999', desc: 'description', music: {...}, statistics: {...}, video: {...} }, ...]
-
-```
-
-See the [post types](src/types/post.d.ts) for the complete request/response objects.
-
-#### .listFollowers(params)
-
-Lists the users that follow the specified user.
-
-```javascript
-api.listFollowers({
-  user_id: '<user_id>',
-  max_time: Math.floor(new Date().getTime() / 1000),
-})
-  .then(res => console.log(res.data.followers))
-  .catch(console.log);
-
-// Outputs:
-// [{ unique_id: 'follower1' }, { unique_id: 'follower2' }, ...]
-
-```
-
-See the [follower types](src/types/follower.d.ts) for the complete request/response objects.
-
-#### .listFollowing(params)
-
-Lists the users that the specified user follows.
-
-```javascript
-api.listFollowing({
-  user_id: '<user_id>',
-  max_time: Math.floor(new Date().getTime() / 1000),
-})
-  .then(res => console.log(res.data.followings))
-  .catch(console.log);
-
-// Outputs:
-// [{ unique_id: 'following1' }, { unique_id: 'following2' }, ...]
-
-```
-
-See the [following types](src/types/follower.d.ts) for the complete request/response objects.
-
-#### .follow(id)
-
-Follows a user.
-
-```javascript
-api.follow('<user_id>')
-  .then(res => console.log(res.data.follow_status))
-  .catch(console.log);
-
-// Outputs:
-// 1
-
-```
-
-See the [follow types](src/types/follow.d.ts) for the response data.
-
-#### .unfollow(id)
-
-Stops following a user.
-
-```javascript
-api.unfollow('<user_id>')
-  .then(res => console.log(res.data.follow_status))
-  .catch(console.log);
-
-// Outputs:
-// 0
-
-```
-
-See the [follow types](src/types/follow.d.ts) for the response data.
-
-#### .listReceivedFollowRequests(params)
-
-Lists the users that have requested to follow the logged in user.
-
-```javascript
-api.listReceivedFollowRequests({
-  max_time: Math.floor(new Date().getTime() / 1000),
-  count: 10,
-})
-  .then(res => console.log(res.data.request_users))
-  .catch(console.log);
-
-// Outputs:
-// [{ unique_id: 'user1' }, { unique_id: 'user2' }, ...]
-
-```
-
-See the [follow types](src/types/follow.d.ts) for the complete request/response objects.
-
-#### .approveFollowRequest(id)
-
-Approves a user's request to follow you.
-
-```javascript
-api.approveFollowRequest('<user_id>')
-  .then(res => console.log(res.data.approve_status))
-  .catch(console.log);
-
-// Outputs:
-// 0
-
-```
-
-See the [follow types](src/types/follow.d.ts) for the response data.
-
-#### .rejectFollowRequest(id)
-
-Rejects a user's request to follow you.
-
-```javascript
-api.rejectFollowRequest('<user_id>')
-  .then(res => console.log(res.data.reject_status))
-  .catch(console.log);
-
-// Outputs:
-// 0
-
-```
-
-See the [follow types](src/types/follow.d.ts) for the response data.
-
-#### .likePost(id)
-
-Likes a post.
-
-```javascript
-api.likePost('<post_id>')
-  .then(res => console.log(res.data.is_digg))
-  .catch(console.log);
-
-// Outputs:
-// 1
-
-```
-
-#### .unlikePost(id)
-
-Unlikes a post.
-
-```javascript
-api.unlikePost('<post_id>')
-  .then(res => console.log(res.data.is_digg))
-  .catch(console.log);
-
-// Outputs:
-// 0
-
-```
-
-#### .listComments(params)
-
-Lists comments for a post.
-
-```javascript
-api.listComments({
-  aweme_id: '<post_id>',
-  cursor: 0,
-})
-  .then(res => console.log(res.data.comments))
-  .catch(console.log);
-
-// Outputs:
-// [{ text: 'first!', user: {...} }, { text: 'second!', user: {...} }, ...]
-
-```
-
-See the [comment types](src/types/comment.d.ts) for the response data.
-
-#### .postComment(postId, text, [tags])
-
-Comments on a post.
-
-```javascript
-api.postComment('<post_id>', 'first!')
-  .then(res => console.log(res.data.comment))
-  .catch(console.log);
-
-// Outputs:
-// { cid: '<comment_id>', text: 'first!', user: {...}, ... }
-
-```
-
-See the [comment types](src/types/comment.d.ts) for the response data.
-
-#### .listCategories(params)
-
-Lists popular categories/hashtags.
-
-```javascript
-api.listCategories({
-  count: 10,
-  cursor: 0,
-})
-  .then(res => console.log(res.data.category_list))
-  .catch(console.log);
-
-// Outputs:
-// [{ { challenge_info: { cha_name: 'posechallenge', cid: '123' }, desc: 'Trending Hashtag' }, ...]
-
-```
-
-See the [category types](src/types/category.d.ts) for the complete request/response objects.
-
-#### .searchHashtags(params)
-
-Searches for hashtags.
-
-```javascript
-api.searchHashtags({
-  keyword: 'example',
-  count: 10,
-  cursor: 0,
-})
-  .then(res => console.log(res.data.challenge_list))
-  .catch(console.log);
-
-// Outputs:
-// [{ challenge_info: {...}, position: [] }, ...]
-
-```
-
-See the [search types](src/types/search.d.ts) for the complete request/response objects.
-
-#### .listPostsInHashtag(params)
-
-Lists posts in a hashtag.
-
-```javascript
-api.listPostsInHashtag({
-  ch_id: '<hashtag_id>',
-})
-  .then(res => console.log(res.data.aweme_list))
-  .catch(console.log);
-
-// Outputs:
-// [{ author: {...}, aweme_id: '999', desc: 'description', music: {...}, statistics: {...}, video: {...} }, ...]
-
-```
-
-See the [hashtag types](src/types/hashtag.d.ts) for the complete request/response objects.
-
-#### .listForYouFeed([params])
-
-Lists posts in the For You feed.
-
-```javascript
-api.listForYouFeed()
-  .then(res => console.log(res.data.aweme_list))
-  .catch(console.log);
-
-// Outputs:
-// [{ author: {...}, aweme_id: '999', desc: 'description', music: {...}, statistics: {...}, video: {...} }, ...]
-
-```
-
-See the [feed types](src/types/feed.d.ts) for the complete request/response objects.
-
-#### .listFollowingFeed([params])
-
-Lists posts in the Following feed.
-
-```javascript
-api.listFollowingFeed()
-  .then(res => console.log(res.data.aweme_list))
-  .catch(console.log);
-
-// Outputs:
-// [{ author: {...}, aweme_id: '999', desc: 'description', music: {...}, statistics: {...}, video: {...} }, ...]
-
-```
-
-See the [feed types](src/types/feed.d.ts) for the complete request/response objects.
-
-#### .getSticker(id)
-
-Gets information about a sticker/effect.
-
-```javascript
-api.getSticker('<sticker_id>')
-  .then(res => console.log(res.data.sticker_infos))
-  .catch(console.log);
-
-// Outputs:
-// [{ id: '100000', name: 'cloned', owner_nickname: 'Effect Assistant', ...}]
-
-```
-
-See the [sticker types](src/types/sticker.d.ts) for the complete response object.
-
-#### .getStickers([ids])
-
-Gets information about many stickers/effects.
-
-```javascript
-api.getStickers(['<sticker_id>', '<sticker_id>'])
-  .then(res => console.log(res.data.sticker_infos))
-  .catch(console.log);
-
-// Outputs:
-// [{ id: '100000', name: 'cloned', owner_nickname: 'Effect Assistant', ...}, ...]
-
-```
-
-See the [sticker types](src/types/sticker.d.ts) for the complete response object.
-
-#### .listPostsBySticker(params)
-
-Lists posts that use a sticker/effect.
-
-```javascript
-api.listPostsBySticker({
-  count: 20,
-  cursor: 0,
-  sticker_id: '100000',
-})
-  .then(res => console.log(res.data.aweme_list))
-  .catch(console.log);
-
-// Outputs:
-// [{ author: {...}, aweme_id: '999', desc: 'description', music: {...}, statistics: {...}, video: {...} }, ...]
-```
-
-See the [sticker types](src/types/sticker.d.ts) for the complete request/response object.
-
-#### .joinLiveStream(id)
-
-Joins a live stream.  
-
-The `rtmp_pull_url` value can be used with VLC's `Open Network Stream` option.
-
-```javascript
-api.joinLiveStream('<room_id>')
-  .then(res => console.log(res.data.room))
-  .catch(console.log);
-
-// Outputs:
-// { create_time: 1000000000, owner: {...}, stream_url: {...}, title: 'Example', user_count: 1000, ... }
-
-```
-
-See the [live stream types](src/types/live-stream.d.ts) for the response data.
-
-#### .leaveLiveStream(id)
-
-Leaves a live stream.
-
-```javascript
-api.leaveLiveStream('<room_id>')
-  .then(res => console.log(res.data.status_code))
-  .catch(console.log);
-
-// Outputs:
-// 0
-
-```
-
-#### .canStartLiveStream()
-
-Determines if the current user is allowed to start a live stream.
-
-```javascript
-api.canStartLiveStream()
-  .then(res => console.log(res.data.can_be_live_podcast))
-  .catch(console.log);
-
-// Outputs:
-// true
-
-```
-
-See the [live stream types](src/types/live-stream.d.ts) for the response data.
-
-#### .startLiveStream(title, [contactsAuthorized])
-
-Starts a live stream by calling [`createLiveStreamRoom`](#createlivestreamroomtitle-contactsauthorized)
-then [`updateLiveStreamStatus`](#updatelivestreamstatusparams).
-
-Keep note of the `room_id` and `stream_id` properties because you will need them to end the live stream.
-
-The `rtmp_push_url` value can be used with streaming applications such as OBS.
-
-```javascript
-api.startLiveStream('title')
-  .then(res => console.log(res.data.room))
-  .catch(console.log);
-
-// Outputs:
-// { create_time: 1000000000, owner: {...}, stream_url: {...}, title: 'Example', user_count: 1000, ... }
-
-```
-
-See the [live stream types](src/types/live-stream.d.ts) for the response data.
-
-#### .endLiveStream(roomId, streamId)
-
-Ends a live stream.
-
-You **must** call this method to so you are no longer marked as "live" in the app.
-
-```javascript
-api.endLiveStream('<room_id>', '<stream_id>')
-  .then(res => console.log(res.data.status_code))
-  .catch(console.log);
-
-// Outputs:
-// 0
-
-```
-
-#### .createLiveStreamRoom(title, [contactsAuthorized])
-
-Creates a room to host a live stream.
-
-The `rtmp_push_url` value can be used with streaming applications such as OBS.
-
-**Note:** This method only creates the room for the live stream.  You'll need to call
-[`updateLiveStreamStatus`](#updatelivestreamstatusparams) to mark the stream as started.
-See [`startLiveStream`](#startlivestreamtitle-contactsauthorized) for a helper method that makes these calls for you.
-
-```javascript
-api.startLiveStream('title')
-  .then(res => console.log(res.data.room))
-  .catch(console.log);
-
-// Outputs:
-// { create_time: 1000000000, owner: {...}, stream_url: {...}, title: 'Example', user_count: 1000, ... }
-
-```
-
-See the [live stream types](src/types/live-stream.d.ts) for the response data.
-
-#### .updateLiveStreamStatus(params)
-
-Updates the status of a live stream.
-
-```javascript
-api.updateLiveStreamStatus({
-  room_id: '<room_id>',
-  stream_id: '<stream_id>',
-  status: LiveStreamStatus.Ended,
-  reason_no: LiveStreamStatusChangedReason.InitiatedByUser,
-})
-  .then(res => console.log(res.data.status_code))
-  .catch(console.log);
-
-// Outputs:
-// 0
-
-```
-
-See the [live stream types](src/types/live-stream.d.ts) for the complete request/response objects.
-
-## Resources
-
-* [Reverse engineering the musical.ly API](https://medium.com/@szdc/reverse-engineering-the-musical-ly-api-662331008eb3)
-
-## Legal
-
-This code is in no way affiliated with, authorized, maintained, sponsored or endorsed by TikTok
-or any of its affiliates or subsidiaries. This is an independent and unofficial API. Use at your own risk.
+MIT. See [LICENSE](LICENSE).

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" role="img" aria-label="Aweme Lens home screenshot placeholder">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#05070b"/><stop offset="1" stop-color="#11172a"/></linearGradient></defs>
+  <rect width="1440" height="900" fill="url(#g)"/>
+  <rect x="64" y="48" width="1312" height="804" rx="28" fill="#090c12" stroke="#263246"/>
+  <text x="720" y="370" fill="#f7fbff" text-anchor="middle" font-family="ui-sans-serif, sans-serif" font-size="58" font-weight="700">Aweme Lens</text>
+  <text x="720" y="430" fill="#8d9bb0" text-anchor="middle" font-family="ui-sans-serif, sans-serif" font-size="23">Replace with a deployed home-screen capture</text>
+  <rect x="300" y="500" width="840" height="92" rx="20" fill="#111824" stroke="#41d9ff" stroke-opacity=".45"/>
+  <text x="340" y="558" fill="#66758c" font-family="ui-monospace, monospace" font-size="20">@username, user ID, video URL, or Aweme ID</text>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" role="img" aria-label="Abstract mock Aweme cover">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#071019"/>
+      <stop offset=".48" stop-color="#10243a"/>
+      <stop offset="1" stop-color="#261b45"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#41d9ff"/>
+      <stop offset=".55" stop-color="#5a8dff"/>
+      <stop offset="1" stop-color="#9675ff"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="18"/></filter>
+  </defs>
+  <rect width="720" height="900" fill="url(#bg)"/>
+  <g opacity=".16" stroke="#cbd6e6" stroke-width="1">
+    <path d="M0 120h720M0 240h720M0 360h720M0 480h720M0 600h720M0 720h720M0 840h720"/>
+    <path d="M120 0v900M240 0v900M360 0v900M480 0v900M600 0v900"/>
+  </g>
+  <ellipse cx="360" cy="420" rx="260" ry="155" fill="#41d9ff" opacity=".12" filter="url(#glow)"/>
+  <ellipse cx="360" cy="420" rx="235" ry="112" fill="none" stroke="url(#line)" stroke-width="13" transform="rotate(-18 360 420)"/>
+  <ellipse cx="360" cy="420" rx="235" ry="112" fill="none" stroke="url(#line)" stroke-width="6" opacity=".58" transform="rotate(52 360 420)"/>
+  <circle cx="360" cy="420" r="72" fill="#f7fbff" opacity=".94"/>
+  <path d="m340 376 72 44-72 44z" fill="#0b1725"/>
+  <rect x="96" y="718" width="528" height="2" rx="1" fill="url(#line)" opacity=".7"/>
+  <text x="96" y="774" fill="#dce8f8" font-family="ui-monospace, monospace" font-size="26" letter-spacing="5">MOCK AWEME</text>
+  <text x="96" y="818" fill="#66758c" font-family="ui-monospace, monospace" font-size="17" letter-spacing="2">SANITIZED FIXTURE · EXACT TARGET</text>
+</svg>
