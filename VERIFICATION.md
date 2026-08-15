@@ -60,18 +60,18 @@ The workflow started the built application with `npm run start`. The Next.js pro
 
 All smoke cases passed:
 
-| Case | Expected HTTP status | Result |
-| --- | ---: | --- |
-| Rendered homepage contains the product identity | 200 | Passed |
-| Health endpoint reports valid mock configuration | 200 | Passed |
-| Successful profile lookup | 200 | Passed |
-| Successful Aweme lookup with sanitized raw data | 200 | Passed |
-| Private profile omits unavailable `secUid` | 200 | Passed |
-| Partial result exposes its warning state | 200 | Passed |
-| Exact target missing after two bounded attempts | 404 | Passed |
-| Malformed upstream response | 502 | Passed |
-| Simulated upstream rate limit | 429 | Passed |
-| Unsupported non-TikTok URL | 422 | Passed |
+| Case                                             | Expected HTTP status | Result |
+| ------------------------------------------------ | -------------------: | ------ |
+| Rendered homepage contains the product identity  |                  200 | Passed |
+| Health endpoint reports valid mock configuration |                  200 | Passed |
+| Successful profile lookup                        |                  200 | Passed |
+| Successful Aweme lookup with sanitized raw data  |                  200 | Passed |
+| Private profile omits unavailable `secUid`       |                  200 | Passed |
+| Partial result exposes its warning state         |                  200 | Passed |
+| Exact target missing after two bounded attempts  |                  404 | Passed |
+| Malformed upstream response                      |                  502 | Passed |
+| Simulated upstream rate limit                    |                  429 | Passed |
+| Unsupported non-TikTok URL                       |                  422 | Passed |
 
 The Aweme smoke case also verified that the exact 19-digit ID survived in sanitized raw output and that synthetic secret markers were absent.
 
