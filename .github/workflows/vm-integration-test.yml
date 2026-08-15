@@ -210,10 +210,10 @@ jobs:
             assert.equal(rateLimited.body.errors[0].code, 'upstream_rate_limited');
             results.push({ case: 'upstream-429', status: rateLimited.response.status, passed: true });
 
-            const invalid = await lookup('https://example.com/not-tiktok');
-            assert.equal(invalid.response.status, 422);
-            assert.equal(invalid.body.errors[0].code, 'invalid_input');
-            results.push({ case: 'invalid-input', status: invalid.response.status, passed: true });
+            const unsupported = await lookup('https://example.com/not-tiktok');
+            assert.equal(unsupported.response.status, 422);
+            assert.equal(unsupported.body.errors[0].code, 'unsupported_input');
+            results.push({ case: 'unsupported-input', status: unsupported.response.status, passed: true });
 
             fs.writeFileSync('vm-smoke-results.json', `${JSON.stringify(results, null, 2)}\n`);
             console.log(JSON.stringify(results, null, 2));
