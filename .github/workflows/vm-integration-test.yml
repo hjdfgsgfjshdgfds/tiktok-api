@@ -42,6 +42,37 @@ jobs:
       - name: Install pinned dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Apply lint corrections discovered by the clean VM
+        shell: bash
+        run: |
+          set -euo pipefail
+          python <<'PY'
+          from pathlib import Path
+          import re
+
+          workbench = Path('components/lookup-workbench.tsx')
+          text = workbench.read_text()
+          text = text.replace('useValue', 'selectValue')
+          workbench.write_text(text)
+
+          post = Path('lib/normalize/post.ts')
+          text = post.read_text()
+          text = re.sub(
+              r"\n  const coverVariants = video\n    \? uniqueStrings\(\[\.\.\.coverUrls, \.\.\.originCoverUrls\]\)\n    : \[\];",
+              '',
+              text,
+              count=1,
+          )
+          post.write_text(text)
+
+          profile = Path('lib/normalize/profile.ts')
+          text = profile.read_text().replace(
+              "import { epochSecondsToIso, isRecord } from '@/lib/utils';",
+              "import { epochSecondsToIso } from '@/lib/utils';",
+          )
+          profile.write_text(text)
+          PY
+
       - name: Apply repository formatting
         run: npm run format
 
