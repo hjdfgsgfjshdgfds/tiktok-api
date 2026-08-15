@@ -32,13 +32,13 @@ describe('mock lookup flow', () => {
       data: {
         kind: 'profile',
         username: 'example',
-        userId: MOCK_IDS.profile
+        userId: MOCK_IDS.profile,
       },
       meta: {
         adapter: 'profileAdapter',
         validationStatus: 'validated',
-        attemptCount: 2
-      }
+        attemptCount: 2,
+      },
     });
     expect(execution.result.fields.some((field) => field.upstreamPath === 'user.uid')).toBe(true);
   });
@@ -59,7 +59,7 @@ describe('mock lookup flow', () => {
     expect(execution.result).toMatchObject({
       ok: false,
       errors: [{ code: 'target_missing' }],
-      meta: { attemptCount: 2, validationStatus: 'target_missing' }
+      meta: { attemptCount: 2, validationStatus: 'target_missing' },
     });
     expect(execution.result.sources).toHaveLength(2);
   });
@@ -80,7 +80,7 @@ describe('mock lookup flow', () => {
     expect(execution.result.data).toMatchObject({
       kind: 'profile',
       username: 'private',
-      privateAccount: true
+      privateAccount: true,
     });
     expect(execution.result.fields.some((field) => field.label === 'secUid')).toBe(false);
   });

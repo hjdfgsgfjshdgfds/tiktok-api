@@ -8,7 +8,7 @@ describe('field provenance', () => {
       value: '6800000000000000001',
       sourceEndpoint: 'GET mock.local/aweme/v1/user/',
       upstreamPath: 'user.uid',
-      retrievedAt: '2026-08-15T12:00:00.000Z'
+      retrievedAt: '2026-08-15T12:00:00.000Z',
     });
     expect(field).toMatchObject({
       label: 'Permanent user ID',
@@ -18,7 +18,7 @@ describe('field provenance', () => {
       retrievedAt: '2026-08-15T12:00:00.000Z',
       confidence: 'high',
       status: 'direct',
-      origin: 'mock'
+      origin: 'mock',
     });
     expect(field?.id).toHaveLength(16);
   });
@@ -31,8 +31,8 @@ describe('field provenance', () => {
           value: undefined,
           sourceEndpoint: 'mock',
           upstreamPath: 'user.sec_uid',
-          retrievedAt: '2026-08-15T12:00:00.000Z'
-        })
+          retrievedAt: '2026-08-15T12:00:00.000Z',
+        }),
       ]),
     ).toEqual([]);
   });
@@ -43,7 +43,7 @@ describe('field provenance', () => {
       value: '7399999999999999991',
       sourceEndpoint: 'GET api2.musical.ly/aweme/v1/aweme/detail/',
       upstreamPath: 'aweme_detail.aweme_id',
-      retrievedAt: '2026-08-15T12:00:00.000Z'
+      retrievedAt: '2026-08-15T12:00:00.000Z',
     });
 
     expect(field?.origin).toBe('tiktok');

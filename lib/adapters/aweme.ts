@@ -5,11 +5,7 @@ import { isRecord, sleep } from '@/lib/utils';
 import { validateExactAweme } from '@/lib/validation';
 import type { AdapterContext, AdapterOutcome } from '@/lib/adapters/types';
 import type { ResultSource } from '@/lib/types';
-import {
-  attachAdapterFailure,
-  makeSource,
-  sourceEndpointLabel
-} from '@/lib/adapters/source';
+import { attachAdapterFailure, makeSource, sourceEndpointLabel } from '@/lib/adapters/source';
 
 export async function awemeAdapter(context: AdapterContext): Promise<AdapterOutcome> {
   const awemeId = context.input.awemeId;
@@ -24,9 +20,13 @@ export async function awemeAdapter(context: AdapterContext): Promise<AdapterOutc
     sources.push(source);
 
     try {
-      const response = await context.client.get('/aweme/v1/aweme/detail/', {
-        aweme_id: awemeId
-      }, { signal: context.signal });
+      const response = await context.client.get(
+        '/aweme/v1/aweme/detail/',
+        {
+          aweme_id: awemeId,
+        },
+        { signal: context.signal },
+      );
       source.httpStatus = response.httpStatus;
       rawAttempts.push(response.data);
 
@@ -53,7 +53,7 @@ export async function awemeAdapter(context: AdapterContext): Promise<AdapterOutc
         post: validated.post,
         rootPath: validated.path,
         sourceEndpoint: sourceEndpointLabel(source),
-        retrievedAt: context.retrievedAt
+        retrievedAt: context.retrievedAt,
       });
 
       return {
@@ -65,7 +65,7 @@ export async function awemeAdapter(context: AdapterContext): Promise<AdapterOutc
         warnings: normalized.warnings,
         attemptCount: attempt,
         validationStatus: normalized.partial ? 'partial' : 'validated',
-        raw: context.includeRaw ? sanitizeRaw({ attempts: rawAttempts }) : undefined
+        raw: context.includeRaw ? sanitizeRaw({ attempts: rawAttempts }) : undefined,
       };
     } catch (error) {
       const current = toLookupError(error);
@@ -77,7 +77,7 @@ export async function awemeAdapter(context: AdapterContext): Promise<AdapterOutc
       throw attachAdapterFailure(current, {
         sources,
         raw: context.includeRaw ? sanitizeRaw({ attempts: rawAttempts }) : undefined,
-        attemptCount: attempt
+        attemptCount: attempt,
       });
     }
   }
@@ -85,6 +85,6 @@ export async function awemeAdapter(context: AdapterContext): Promise<AdapterOutc
   throw new LookupError('target_missing', 'The requested Aweme was not returned.', {
     sources,
     attemptCount: maximumAttempts,
-    validationStatus: 'target_missing'
+    validationStatus: 'target_missing',
   });
 }

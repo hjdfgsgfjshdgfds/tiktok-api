@@ -2,7 +2,8 @@ import { isRecord } from '@/lib/utils';
 
 const REDACTED = '[REDACTED]';
 
-const SENSITIVE_KEY = /(?:^|[_-])(?:cookie|authorization|token|session|password|secret|device(?:_?id)?|openudid|iid|fp|ms_?token|x[-_]?bogus|x[-_]?gnarly|x[-_]?argus|x[-_]?gorgon|x[-_]?ladon|signature|signed|proxy)(?:$|[_-])/i;
+const SENSITIVE_KEY =
+  /(?:^|[_-])(?:cookie|authorization|token|session|password|secret|device(?:_?id)?|openudid|iid|fp|ms_?token|x[-_]?bogus|x[-_]?gnarly|x[-_]?argus|x[-_]?gorgon|x[-_]?ladon|signature|signed|proxy)(?:$|[_-])/i;
 
 const SENSITIVE_FIELD_NAMES = new Set([
   'cookie',
@@ -42,7 +43,7 @@ const SENSITIVE_FIELD_NAMES = new Set([
   '_signature',
   'signature',
   'signed_url',
-  'proxy_password'
+  'proxy_password',
 ]);
 
 const SENSITIVE_QUERY_KEYS = new Set(
@@ -78,7 +79,7 @@ const SENSITIVE_QUERY_KEYS = new Set(
     'policy',
     'key-pair-id',
     'x-expires',
-    'expires'
+    'expires',
   ].map((key) => key.toLowerCase()),
 );
 
@@ -90,7 +91,7 @@ const ALLOWED_MEDIA_SUFFIXES = [
   '.muscdn.com',
   '.byteoversea.com',
   '.ibytedtos.com',
-  '.byteimg.com'
+  '.byteimg.com',
 ];
 
 function isSensitiveQueryKey(key: string): boolean {
@@ -147,7 +148,12 @@ export function safePublicMediaUrl(value: unknown): string | undefined {
     return undefined;
   }
 
-  if (url.protocol !== 'https:' || url.username || url.password || (url.port && url.port !== '443')) {
+  if (
+    url.protocol !== 'https:' ||
+    url.username ||
+    url.password ||
+    (url.port && url.port !== '443')
+  ) {
     return undefined;
   }
   const host = url.hostname.toLowerCase();
@@ -194,7 +200,8 @@ export function sanitizeRaw(value: unknown, options: SanitizeOptions = {}): unkn
       if (seen.has(current)) return '[CIRCULAR]';
       seen.add(current);
       const output = current.slice(0, maxArrayLength).map((item) => visit(item, depth + 1));
-      if (current.length > maxArrayLength) output.push(`[TRUNCATED_${current.length - maxArrayLength}_ITEMS]`);
+      if (current.length > maxArrayLength)
+        output.push(`[TRUNCATED_${current.length - maxArrayLength}_ITEMS]`);
       return output;
     }
 

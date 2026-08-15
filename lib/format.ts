@@ -1,7 +1,7 @@
 export function formatCompactNumber(value: number): string {
   return new Intl.NumberFormat('en', {
     notation: Math.abs(value) >= 10_000 ? 'compact' : 'standard',
-    maximumFractionDigits: 1
+    maximumFractionDigits: 1,
   }).format(value);
 }
 
@@ -14,7 +14,7 @@ export function formatDateTime(value: string): string {
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat('en', {
     dateStyle: 'medium',
-    timeStyle: 'short'
+    timeStyle: 'short',
   }).format(date);
 }
 

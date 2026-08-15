@@ -46,7 +46,7 @@ const PARAM_ORDER = [
   'dpi',
   'update_version_code',
   '_rticket',
-  'ts'
+  'ts',
 ];
 
 const STATIC_PARAMS = {
@@ -78,7 +78,7 @@ const STATIC_PARAMS = {
   carrier_region_v2: '505',
   aid: '1233',
   'pass-region': '1',
-  'pass-route': '1'
+  'pass-route': '1',
 } as const;
 
 const cooldownUntilByHost = new Map<string, number>();
@@ -97,7 +97,7 @@ function abortAfter(
     clear: () => {
       clearTimeout(timeout);
       parentSignal?.removeEventListener('abort', abortFromParent);
-    }
+    },
   };
 }
 
@@ -151,10 +151,14 @@ export class LegacyTikTokClient implements EndpointClient {
     const baseUrl = new URL(env.legacy.baseUrl);
     const cooldownUntil = cooldownUntilByHost.get(baseUrl.host) ?? 0;
     if (cooldownUntil > Date.now()) {
-      throw new LookupError('upstream_rate_limited', 'The upstream is cooling down after a refusal.', {
-        retryable: true,
-        detail: `Cooldown ends at ${new Date(cooldownUntil).toISOString()}`
-      });
+      throw new LookupError(
+        'upstream_rate_limited',
+        'The upstream is cooling down after a refusal.',
+        {
+          retryable: true,
+          detail: `Cooldown ends at ${new Date(cooldownUntil).toISOString()}`,
+        },
+      );
     }
 
     const now = Date.now();
@@ -171,17 +175,12 @@ export class LegacyTikTokClient implements EndpointClient {
           .map(([key, value]) => [key, String(value)]),
       ),
       _rticket: String(now),
-      ts: String(timestamp)
+      ts: String(timestamp),
     };
 
     const unsignedUrl = new URL(path, baseUrl);
     unsignedUrl.search = orderedQueryString(merged);
-    const signedUrl = await this.sign(
-      unsignedUrl,
-      timestamp,
-      env.legacy.deviceId,
-      options?.signal,
-    );
+    const signedUrl = await this.sign(unsignedUrl, timestamp, env.legacy.deviceId, options?.signal);
     assertSameRequestTarget(unsignedUrl, signedUrl);
 
     const abort = abortAfter(env.requestTimeoutMs, options?.signal);
@@ -197,24 +196,21 @@ export class LegacyTikTokClient implements EndpointClient {
           'sdk-version': '1',
           'x-ss-tc': '0',
           accept: 'application/json',
-          ...(env.legacy.cookie ? { cookie: env.legacy.cookie } : {})
-        }
+          ...(env.legacy.cookie ? { cookie: env.legacy.cookie } : {}),
+        },
       });
 
       if (response.status === 403 || response.status === 429) {
-        cooldownUntilByHost.set(
-          baseUrl.host,
-          Date.now() + env.upstreamCooldownSeconds * 1000,
-        );
+        cooldownUntilByHost.set(baseUrl.host, Date.now() + env.upstreamCooldownSeconds * 1000);
       }
       if (response.status === 403) {
         throw new LookupError('upstream_auth', 'TikTok refused the legacy request.', {
-          detail: 'HTTP 403; legacy credentials, device context, or signing may be invalid.'
+          detail: 'HTTP 403; legacy credentials, device context, or signing may be invalid.',
         });
       }
       if (response.status === 429) {
         throw new LookupError('upstream_rate_limited', 'TikTok rate-limited the legacy request.', {
-          retryable: true
+          retryable: true,
         });
       }
       if (response.status >= 300 && response.status < 400) {
@@ -226,12 +222,18 @@ export class LegacyTikTokClient implements EndpointClient {
 
       const declaredLength = Number(response.headers.get('content-length') ?? 0);
       if (declaredLength > MAX_RESPONSE_BYTES) {
-        throw new LookupError('upstream_malformed', 'The upstream response exceeded the size limit.');
+        throw new LookupError(
+          'upstream_malformed',
+          'The upstream response exceeded the size limit.',
+        );
       }
 
       const bytes = new Uint8Array(await response.arrayBuffer());
       if (bytes.byteLength > MAX_RESPONSE_BYTES) {
-        throw new LookupError('upstream_malformed', 'The upstream response exceeded the size limit.');
+        throw new LookupError(
+          'upstream_malformed',
+          'The upstream response exceeded the size limit.',
+        );
       }
       if (bytes.byteLength === 0) {
         throw new LookupError('upstream_malformed', 'The upstream returned an empty body.');
@@ -243,7 +245,7 @@ export class LegacyTikTokClient implements EndpointClient {
         data = JSON_BIG.parse(text);
       } catch (error) {
         throw new LookupError('upstream_malformed', 'The upstream returned malformed JSON.', {
-          cause: error
+          cause: error,
         });
       }
 
@@ -251,14 +253,16 @@ export class LegacyTikTokClient implements EndpointClient {
         httpStatus: response.status,
         data,
         byteLength: bytes.byteLength,
-        elapsedMs: Math.round(performance.now() - started)
+        elapsedMs: Math.round(performance.now() - started),
       };
     } catch (error) {
       if (error instanceof LookupError) throw error;
       if (error instanceof DOMException && error.name === 'AbortError') {
         throw new LookupError('timeout', 'The upstream request timed out.', { retryable: true });
       }
-      throw new LookupError('upstream_error', 'The legacy upstream request failed.', { cause: error });
+      throw new LookupError('upstream_error', 'The legacy upstream request failed.', {
+        cause: error,
+      });
     } finally {
       abort.clear();
     }
@@ -286,28 +290,35 @@ export class LegacyTikTokClient implements EndpointClient {
         headers: {
           'content-type': 'application/json',
           accept: 'application/json',
-          ...(env.legacy.signerToken
-            ? { authorization: `Bearer ${env.legacy.signerToken}` }
-            : {})
+          ...(env.legacy.signerToken ? { authorization: `Bearer ${env.legacy.signerToken}` } : {}),
         },
         body: JSON.stringify({
           url: unsignedUrl.toString(),
           timestamp,
-          deviceId
-        })
+          deviceId,
+        }),
       });
 
       if (!response.ok) {
-        throw new LookupError('upstream_auth', `The signer bridge returned HTTP ${response.status}.`);
+        throw new LookupError(
+          'upstream_auth',
+          `The signer bridge returned HTTP ${response.status}.`,
+        );
       }
 
       const declaredLength = Number(response.headers.get('content-length') ?? 0);
       if (declaredLength > MAX_SIGNER_RESPONSE_BYTES) {
-        throw new LookupError('upstream_auth', 'The signer bridge response exceeded the size limit.');
+        throw new LookupError(
+          'upstream_auth',
+          'The signer bridge response exceeded the size limit.',
+        );
       }
       const bytes = new Uint8Array(await response.arrayBuffer());
       if (bytes.byteLength === 0 || bytes.byteLength > MAX_SIGNER_RESPONSE_BYTES) {
-        throw new LookupError('upstream_auth', 'The signer bridge returned an invalid response size.');
+        throw new LookupError(
+          'upstream_auth',
+          'The signer bridge returned an invalid response size.',
+        );
       }
 
       let signerData: unknown;
@@ -315,7 +326,7 @@ export class LegacyTikTokClient implements EndpointClient {
         signerData = JSON.parse(new TextDecoder('utf-8', { fatal: false }).decode(bytes));
       } catch (error) {
         throw new LookupError('upstream_auth', 'The signer bridge returned malformed JSON.', {
-          cause: error
+          cause: error,
         });
       }
       const parsed = signerResponseSchema.safeParse(signerData);

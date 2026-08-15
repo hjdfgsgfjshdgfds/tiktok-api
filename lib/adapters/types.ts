@@ -6,7 +6,7 @@ import type {
   LookupMode,
   ParsedInput,
   ResultSource,
-  ValidationStatus
+  ValidationStatus,
 } from '@/lib/types';
 
 export interface AdapterContext {

@@ -33,7 +33,7 @@ export function createField(options: FieldOptions): FieldProvenance | null {
     confidence: options.confidence ?? 'high',
     status: options.status ?? 'direct',
     explanation: options.explanation,
-    origin: options.origin ?? (options.sourceEndpoint.includes('mock.local') ? 'mock' : 'tiktok')
+    origin: options.origin ?? (options.sourceEndpoint.includes('mock.local') ? 'mock' : 'tiktok'),
   };
 }
 

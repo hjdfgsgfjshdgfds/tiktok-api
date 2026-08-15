@@ -6,7 +6,7 @@ const TIKTOK_HOSTS = new Set([
   'www.tiktok.com',
   'm.tiktok.com',
   'vm.tiktok.com',
-  'vt.tiktok.com'
+  'vt.tiktok.com',
 ]);
 
 const USERNAME_PATTERN = /^[A-Za-z0-9._]{2,32}$/;
@@ -77,7 +77,7 @@ function parseTikTokUrl(raw: string): ParsedInput {
       value: canonicalUrl,
       username,
       awemeId,
-      canonicalUrl
+      canonicalUrl,
     };
   }
 
@@ -90,7 +90,7 @@ function parseTikTokUrl(raw: string): ParsedInput {
       type: 'video_url',
       value: canonicalUrl,
       awemeId,
-      canonicalUrl
+      canonicalUrl,
     };
   }
 
@@ -102,7 +102,7 @@ function parseTikTokUrl(raw: string): ParsedInput {
       type: 'username',
       value: username,
       username,
-      canonicalUrl: `https://www.tiktok.com/@${username}`
+      canonicalUrl: `https://www.tiktok.com/@${username}`,
     };
   }
 
@@ -116,7 +116,10 @@ export function parseLookupInput(rawInput: string): ParsedInput {
   const input = rawInput.trim();
 
   if (!input) {
-    throw new LookupError('invalid_input', 'Enter a TikTok username, ID, profile URL, or video URL.');
+    throw new LookupError(
+      'invalid_input',
+      'Enter a TikTok username, ID, profile URL, or video URL.',
+    );
   }
 
   if (input.length > 500) {
@@ -124,11 +127,17 @@ export function parseLookupInput(rawInput: string): ParsedInput {
   }
 
   if (COMMAND_LIKE_PATTERN.test(input)) {
-    throw new LookupError('invalid_input', 'The lookup value contains unsupported control characters.');
+    throw new LookupError(
+      'invalid_input',
+      'The lookup value contains unsupported control characters.',
+    );
   }
 
   if (/^(?:javascript|data|file|command|shell):/i.test(input)) {
-    throw new LookupError('unsupported_input', 'Command-like or executable input is not supported.');
+    throw new LookupError(
+      'unsupported_input',
+      'Command-like or executable input is not supported.',
+    );
   }
 
   if (/^https?:\/\//i.test(input)) {
@@ -155,7 +164,7 @@ export function parseLookupInput(rawInput: string): ParsedInput {
         type: 'aweme_id',
         value: id,
         awemeId: id,
-        numericAmbiguous: true
+        numericAmbiguous: true,
       };
     }
     return {
@@ -163,7 +172,7 @@ export function parseLookupInput(rawInput: string): ParsedInput {
       type: 'user_id',
       value: id,
       userId: id,
-      numericAmbiguous: true
+      numericAmbiguous: true,
     };
   }
 

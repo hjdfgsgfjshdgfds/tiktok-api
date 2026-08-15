@@ -17,7 +17,7 @@ import type {
   LookupIssue,
   LookupMode,
   LookupResult,
-  ParsedInput
+  ParsedInput,
 } from '@/lib/types';
 
 interface LookupRequest {
@@ -50,9 +50,7 @@ function entityForInput(input?: ParsedInput): LookupResult['entity']['type'] {
 
 function adapterForInput(input?: ParsedInput): string {
   if (!input) return 'orchestrator';
-  return input.type === 'username' || input.type === 'user_id'
-    ? 'profileAdapter'
-    : 'awemeAdapter';
+  return input.type === 'username' || input.type === 'user_id' ? 'profileAdapter' : 'awemeAdapter';
 }
 
 function alternateNumericInput(input: ParsedInput): ParsedInput {
@@ -62,7 +60,7 @@ function alternateNumericInput(input: ParsedInput): ParsedInput {
       type: 'user_id',
       value: input.value,
       userId: input.value,
-      numericAmbiguous: false
+      numericAmbiguous: false,
     };
   }
   return {
@@ -70,7 +68,7 @@ function alternateNumericInput(input: ParsedInput): ParsedInput {
     type: 'aweme_id',
     value: input.value,
     awemeId: input.value,
-    numericAmbiguous: false
+    numericAmbiguous: false,
   };
 }
 
@@ -99,7 +97,7 @@ async function executeWithNumericFallback(
       const fallbackWarning: LookupIssue = {
         code: 'numeric_id_disambiguated',
         message: `The bare numeric ID was resolved as a ${outcome.entityType} after the first exact-target lookup missed.`,
-        detail: 'Use user:<id> or aweme:<id> to choose explicitly and avoid the fallback request.'
+        detail: 'Use user:<id> or aweme:<id> to choose explicitly and avoid the fallback request.',
       };
       outcome.sources = [...firstError.sources, ...outcome.sources];
       outcome.attemptCount += firstError.attemptCount;
@@ -107,7 +105,7 @@ async function executeWithNumericFallback(
       if (context.includeRaw) {
         outcome.raw = sanitizeRaw({
           firstCandidate: firstError.raw,
-          resolvedCandidate: outcome.raw
+          resolvedCandidate: outcome.raw,
         });
       }
       return { outcome, resolvedType: resolvedInputType(alternate, outcome) };
@@ -124,7 +122,7 @@ async function executeWithNumericFallback(
           ? sanitizeRaw({ firstCandidate: firstError.raw, secondCandidate: current.raw })
           : undefined,
         attemptCount: firstError.attemptCount + current.attemptCount,
-        validationStatus: current.validationStatus
+        validationStatus: current.validationStatus,
       });
     }
   }
@@ -144,7 +142,7 @@ export function createErrorExecution(options: {
     ok: false,
     input: {
       type: options.input?.type ?? 'unknown',
-      value: options.input?.value ?? options.rawValue?.slice(0, 500) ?? ''
+      value: options.input?.value ?? options.rawValue?.slice(0, 500) ?? '',
     },
     entity: { type: entityForInput(options.input) },
     data: null,
@@ -155,8 +153,8 @@ export function createErrorExecution(options: {
       {
         code: error.code,
         message: error.message,
-        detail: error.detail
-      }
+        detail: error.detail,
+      },
     ],
     retrievedAt,
     meta: {
@@ -165,9 +163,9 @@ export function createErrorExecution(options: {
       adapter: error.sources[0]?.adapter ?? adapterForInput(options.input),
       attemptCount: error.attemptCount,
       validationStatus: error.validationStatus,
-      cacheHit: false
+      cacheHit: false,
     },
-    raw: error.raw !== undefined ? sanitizeRaw(error.raw) : undefined
+    raw: error.raw !== undefined ? sanitizeRaw(error.raw) : undefined,
   };
   return { status: error.status, result };
 }
@@ -192,7 +190,7 @@ export async function runLookup(request: LookupRequest): Promise<LookupExecution
       value: input.value,
       username: input.username,
       includeRaw,
-      rawRequested: request.includeRaw
+      rawRequested: request.includeRaw,
     });
     const cache = getCache();
     const cached = cache.get(cacheKey);
@@ -203,7 +201,7 @@ export async function runLookup(request: LookupRequest): Promise<LookupExecution
         mode: env.mode,
         adapter: cached.result.meta.adapter,
         status: cached.status,
-        durationMs: Math.round(performance.now() - started)
+        durationMs: Math.round(performance.now() - started),
       });
       cached.result.meta.requestId = request.requestId;
       return cached;
@@ -217,21 +215,21 @@ export async function runLookup(request: LookupRequest): Promise<LookupExecution
       retrievedAt: new Date().toISOString(),
       requestId: request.requestId,
       targetMissingRetries: env.targetMissingRetries,
-      signal: budgetController.signal
+      signal: budgetController.signal,
     };
     const { outcome, resolvedType } = await executeWithNumericFallback(context);
     const warnings = [...outcome.warnings];
     if (request.includeRaw && !env.allowRawViewer) {
       warnings.push({
         code: 'raw_viewer_disabled',
-        message: 'Raw response viewing is disabled by the server configuration.'
+        message: 'Raw response viewing is disabled by the server configuration.',
       });
     }
     if (env.mode === 'legacy-live') {
       warnings.push({
         code: 'legacy_live_experimental',
         message:
-          'This result came from an evidence-bounded TikTok 9.1.0-era adapter, not a verified current TikTok API.'
+          'This result came from an evidence-bounded TikTok 9.1.0-era adapter, not a verified current TikTok API.',
       });
     }
 
@@ -251,9 +249,9 @@ export async function runLookup(request: LookupRequest): Promise<LookupExecution
         adapter: outcome.adapter,
         attemptCount: outcome.attemptCount,
         validationStatus: outcome.validationStatus,
-        cacheHit: false
+        cacheHit: false,
       },
-      raw: outcome.raw
+      raw: outcome.raw,
     };
     const execution = { status: 200, result } satisfies LookupExecution;
     cache.set(cacheKey, execution);
@@ -268,8 +266,8 @@ export async function runLookup(request: LookupRequest): Promise<LookupExecution
       metadata: {
         inputType: resolvedType,
         validationStatus: outcome.validationStatus,
-        attempts: outcome.attemptCount
-      }
+        attempts: outcome.attemptCount,
+      },
     });
     return execution;
   } catch (error) {
@@ -278,7 +276,7 @@ export async function runLookup(request: LookupRequest): Promise<LookupExecution
       requestId: request.requestId,
       mode,
       input,
-      rawValue: request.query
+      rawValue: request.query,
     });
     logEvent(execution.status >= 500 ? 'error' : 'warn', {
       requestId: request.requestId,
@@ -291,8 +289,8 @@ export async function runLookup(request: LookupRequest): Promise<LookupExecution
       metadata: {
         inputType: execution.result.input.type,
         validationStatus: execution.result.meta.validationStatus,
-        attempts: execution.result.meta.attemptCount
-      }
+        attempts: execution.result.meta.attemptCount,
+      },
     });
     return execution;
   } finally {

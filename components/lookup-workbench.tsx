@@ -7,7 +7,7 @@ import {
   useCallback,
   useEffect,
   useRef,
-  useState
+  useState,
 } from 'react';
 import { ArrowIcon, CodeIcon, SearchIcon, TrashIcon } from '@/components/icons';
 import { EmptyState } from '@/components/empty-state';
@@ -34,7 +34,7 @@ function isLookupResult(value: unknown): value is LookupResult {
 export function LookupWorkbench({
   mode,
   rawViewerEnabled,
-  capabilities
+  capabilities,
 }: {
   mode: LookupMode;
   rawViewerEnabled: boolean;
@@ -54,7 +54,9 @@ export function LookupWorkbench({
       const stored = window.localStorage.getItem(RECENT_STORAGE_KEY);
       const parsed: unknown = stored ? JSON.parse(stored) : [];
       if (Array.isArray(parsed)) {
-        setRecent(parsed.filter((item): item is string => typeof item === 'string').slice(0, MAX_RECENT));
+        setRecent(
+          parsed.filter((item): item is string => typeof item === 'string').slice(0, MAX_RECENT),
+        );
       }
     } catch {
       setRecent([]);
@@ -110,10 +112,11 @@ export function LookupWorkbench({
           method: 'POST',
           signal: controller.signal,
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ query: normalized, includeRaw: includeRaw && rawViewerEnabled })
+          body: JSON.stringify({ query: normalized, includeRaw: includeRaw && rawViewerEnabled }),
         });
         const data: unknown = await response.json();
-        if (!isLookupResult(data)) throw new Error('The server returned an unexpected response shape.');
+        if (!isLookupResult(data))
+          throw new Error('The server returned an unexpected response shape.');
         setResult(data);
         if (data.ok) saveRecent(normalized);
       } catch (error) {
@@ -134,7 +137,7 @@ export function LookupWorkbench({
     void lookup(query);
   }
 
-  function useValue(value: string) {
+  function selectValue(value: string) {
     setQuery(value);
     void lookup(value);
   }
@@ -202,7 +205,9 @@ export function LookupWorkbench({
             <input
               type="checkbox"
               checked={includeRaw && rawViewerEnabled}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => setIncludeRaw(event.target.checked)}
+              onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                setIncludeRaw(event.target.checked)
+              }
               disabled={!rawViewerEnabled}
             />
             <span className="raw-toggle__control" aria-hidden="true" />
@@ -216,7 +221,7 @@ export function LookupWorkbench({
         <div className="example-strip" aria-label="Example searches">
           <span>Try</span>
           {examples.map((example) => (
-            <button key={example} type="button" onClick={() => useValue(example)}>
+            <button key={example} type="button" onClick={() => selectValue(example)}>
               {example}
             </button>
           ))}
@@ -229,7 +234,7 @@ export function LookupWorkbench({
             <h2 id="recent-title">Recent</h2>
             <div className="recent-list">
               {recent.map((item) => (
-                <button key={item} type="button" onClick={() => useValue(item)} title={item}>
+                <button key={item} type="button" onClick={() => selectValue(item)} title={item}>
                   {item}
                 </button>
               ))}

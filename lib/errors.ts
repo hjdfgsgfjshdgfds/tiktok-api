@@ -20,7 +20,7 @@ const DEFAULT_STATUS: Record<LookupErrorCode, number> = {
   timeout: 504,
   upstream_malformed: 502,
   upstream_error: 502,
-  internal_error: 500
+  internal_error: 500,
 };
 
 interface LookupErrorOptions {
@@ -67,11 +67,11 @@ export function toLookupError(error: unknown): LookupError {
   if (error instanceof DOMException && error.name === 'AbortError') {
     return new LookupError('timeout', 'The lookup exceeded its execution budget.', {
       retryable: true,
-      cause: error
+      cause: error,
     });
   }
 
   return new LookupError('internal_error', 'The lookup could not be completed safely.', {
-    cause: error
+    cause: error,
   });
 }

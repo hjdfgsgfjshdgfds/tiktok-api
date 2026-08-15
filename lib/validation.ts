@@ -18,7 +18,7 @@ export function assertSuccessfulEnvelope(value: unknown): Record<string, unknown
   }
   if (code !== 0) {
     throw new LookupError('upstream_error', `TikTok returned status_code ${code}.`, {
-      detail: typeof value.status_msg === 'string' ? value.status_msg : undefined
+      detail: typeof value.status_msg === 'string' ? value.status_msg : undefined,
     });
   }
   return value;
@@ -49,7 +49,7 @@ export function validateExactUsernameSearch(
   }
 
   throw new LookupError('target_missing', 'No exact username match was returned.', {
-    validationStatus: 'target_missing'
+    validationStatus: 'target_missing',
   });
 }
 
@@ -65,14 +65,21 @@ export function validateProfileResponse(
   const envelope = assertSuccessfulEnvelope(value);
   const parsed = legacyUserSchema.safeParse(envelope.user);
   if (!parsed.success) {
-    throw new LookupError('upstream_malformed', 'The profile response did not contain a valid user.');
+    throw new LookupError(
+      'upstream_malformed',
+      'The profile response did not contain a valid user.',
+    );
   }
 
   if (requestedUserId && parsed.data.uid !== requestedUserId) {
-    throw new LookupError('target_missing', 'The returned profile did not match the requested user ID.', {
-      detail: `Expected ${requestedUserId}; received ${parsed.data.uid ?? 'no uid'}.`,
-      validationStatus: 'target_missing'
-    });
+    throw new LookupError(
+      'target_missing',
+      'The returned profile did not match the requested user ID.',
+      {
+        detail: `Expected ${requestedUserId}; received ${parsed.data.uid ?? 'no uid'}.`,
+        validationStatus: 'target_missing',
+      },
+    );
   }
 
   return { user: parsed.data, path: 'user' };
@@ -83,7 +90,9 @@ export interface ValidatedAweme {
   path: string;
 }
 
-function candidateAwemes(envelope: Record<string, unknown>): Array<{ value: unknown; path: string }> {
+function candidateAwemes(
+  envelope: Record<string, unknown>,
+): Array<{ value: unknown; path: string }> {
   const candidates: Array<{ value: unknown; path: string }> = [];
   if (envelope.aweme_detail !== undefined) {
     candidates.push({ value: envelope.aweme_detail, path: 'aweme_detail' });
@@ -105,14 +114,17 @@ export function validateExactAweme(
   const hasCandidateContainer =
     envelope.aweme_detail !== undefined || Array.isArray(envelope.aweme_list);
   if (!hasCandidateContainer) {
-    throw new LookupError('upstream_malformed', 'The response contained no Aweme candidate container.');
+    throw new LookupError(
+      'upstream_malformed',
+      'The response contained no Aweme candidate container.',
+    );
   }
 
   const candidates = candidateAwemes(envelope);
   if (candidates.length === 0) {
     throw new LookupError('target_missing', 'The requested Aweme was absent from the response.', {
       detail: `The Aweme candidate container was empty for requested aweme_id ${requestedAwemeId}.`,
-      validationStatus: 'target_missing'
+      validationStatus: 'target_missing',
     });
   }
 
@@ -127,10 +139,14 @@ export function validateExactAweme(
       const nestedUid = parsed.data.author?.uid;
       const authorUid = nestedUid ?? parsed.data.author_user_id;
       if (authorUid !== expectedAuthorUid) {
-        throw new LookupError('target_missing', 'The Aweme author did not match the expected user ID.', {
-          detail: `Expected author ${expectedAuthorUid}; received ${authorUid ?? 'no author uid'}.`,
-          validationStatus: 'target_missing'
-        });
+        throw new LookupError(
+          'target_missing',
+          'The Aweme author did not match the expected user ID.',
+          {
+            detail: `Expected author ${expectedAuthorUid}; received ${authorUid ?? 'no author uid'}.`,
+            validationStatus: 'target_missing',
+          },
+        );
       }
     }
 
@@ -143,6 +159,6 @@ export function validateExactAweme(
 
   throw new LookupError('target_missing', 'The requested Aweme was absent from the response.', {
     detail: `No candidate had aweme_id ${requestedAwemeId}.`,
-    validationStatus: 'target_missing'
+    validationStatus: 'target_missing',
   });
 }

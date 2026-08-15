@@ -26,7 +26,7 @@ export function logEvent(level: LogLevel, payload: LogPayload): void {
     code: payload.code,
     durationMs: payload.durationMs,
     attempt: payload.attempt,
-    metadata: payload.metadata ? sanitizeRaw(payload.metadata) : undefined
+    metadata: payload.metadata ? sanitizeRaw(payload.metadata) : undefined,
   };
 
   const line = JSON.stringify(entry);

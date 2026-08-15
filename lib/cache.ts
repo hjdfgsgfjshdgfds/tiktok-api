@@ -37,7 +37,7 @@ export class LookupCache {
     this.entries.set(key, {
       value: structuredClone(value),
       expiresAt: now + this.ttlMilliseconds,
-      touchedAt: now
+      touchedAt: now,
     });
 
     if (this.entries.size > this.maximumEntries) {

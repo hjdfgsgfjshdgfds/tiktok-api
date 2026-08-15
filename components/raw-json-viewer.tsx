@@ -24,11 +24,7 @@ function HighlightedJson({ text, query }: { text: string; query: string }) {
   return (
     <>
       {parts.map((part, index) =>
-        part.match ? (
-          <mark key={index}>{part.text}</mark>
-        ) : (
-          <span key={index}>{part.text}</span>
-        ),
+        part.match ? <mark key={index}>{part.text}</mark> : <span key={index}>{part.text}</span>,
       )}
     </>
   );

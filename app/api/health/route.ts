@@ -22,11 +22,11 @@ export async function GET(): Promise<NextResponse> {
         legacyLiveConfigured: false,
         evidenceBoundary:
           'Current modern TikTok signing and api16 target-feed behavior are not present in the connected repository.',
-        capabilities: ENDPOINT_CAPABILITIES
+        capabilities: ENDPOINT_CAPABILITIES,
       },
       {
         status: 503,
-        headers: { 'cache-control': 'no-store' }
+        headers: { 'cache-control': 'no-store' },
       },
     );
   }
@@ -52,11 +52,11 @@ export async function GET(): Promise<NextResponse> {
       legacyLiveConfigured: legacyConfigured,
       evidenceBoundary:
         'Current modern TikTok signing and api16 target-feed behavior are not present in the connected repository.',
-      capabilities: ENDPOINT_CAPABILITIES
+      capabilities: ENDPOINT_CAPABILITIES,
     },
     {
       status: operational ? 200 : 503,
-      headers: { 'cache-control': 'no-store' }
+      headers: { 'cache-control': 'no-store' },
     },
   );
 }

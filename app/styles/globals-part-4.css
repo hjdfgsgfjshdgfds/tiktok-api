@@ -1,4 +1,3 @@
-
 .empty-orbit {
   position: relative;
   display: grid;
@@ -13,7 +12,7 @@
   position: absolute;
   border: 1px solid rgba(90, 141, 255, 0.24);
   border-radius: 50%;
-  content: "";
+  content: '';
 }
 
 .empty-orbit::before {

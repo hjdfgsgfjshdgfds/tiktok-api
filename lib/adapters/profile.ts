@@ -4,11 +4,7 @@ import { sanitizeRaw } from '@/lib/redact';
 import { validateExactUsernameSearch, validateProfileResponse } from '@/lib/validation';
 import type { AdapterContext, AdapterOutcome } from '@/lib/adapters/types';
 import type { ResultSource } from '@/lib/types';
-import {
-  attachAdapterFailure,
-  makeSource,
-  sourceEndpointLabel
-} from '@/lib/adapters/source';
+import { attachAdapterFailure, makeSource, sourceEndpointLabel } from '@/lib/adapters/source';
 
 export async function profileAdapter(context: AdapterContext): Promise<AdapterOutcome> {
   const sources: ResultSource[] = [];
@@ -25,13 +21,17 @@ export async function profileAdapter(context: AdapterContext): Promise<AdapterOu
       attempts += 1;
       const searchSource = makeSource('legacy-user-search', context.mode, { attempt: attempts });
       sources.push(searchSource);
-      const searchResponse = await context.client.get('/aweme/v1/discover/search/', {
-        keyword: username,
-        count: 20,
-        cursor: 0,
-        type: 1,
-        retry_type: 'no_retry'
-      }, { signal: context.signal });
+      const searchResponse = await context.client.get(
+        '/aweme/v1/discover/search/',
+        {
+          keyword: username,
+          count: 20,
+          cursor: 0,
+          type: 1,
+          retry_type: 'no_retry',
+        },
+        { signal: context.signal },
+      );
       searchSource.httpStatus = searchResponse.httpStatus;
       raw.search = searchResponse.data;
 
@@ -50,9 +50,13 @@ export async function profileAdapter(context: AdapterContext): Promise<AdapterOu
     attempts += 1;
     const profileSource = makeSource('legacy-profile-by-id', context.mode, { attempt: attempts });
     sources.push(profileSource);
-    const profileResponse = await context.client.get('/aweme/v1/user/', {
-      user_id: requestedUserId
-    }, { signal: context.signal });
+    const profileResponse = await context.client.get(
+      '/aweme/v1/user/',
+      {
+        user_id: requestedUserId,
+      },
+      { signal: context.signal },
+    );
     profileSource.httpStatus = profileResponse.httpStatus;
     raw.profile = profileResponse.data;
 
@@ -62,7 +66,7 @@ export async function profileAdapter(context: AdapterContext): Promise<AdapterOu
       user: validated.user,
       rootPath: validated.path,
       sourceEndpoint: sourceEndpointLabel(profileSource),
-      retrievedAt: context.retrievedAt
+      retrievedAt: context.retrievedAt,
     });
 
     return {
@@ -74,7 +78,7 @@ export async function profileAdapter(context: AdapterContext): Promise<AdapterOu
       warnings: normalized.warnings,
       attemptCount: attempts,
       validationStatus: normalized.partial ? 'partial' : 'validated',
-      raw: context.includeRaw ? sanitizeRaw(raw) : undefined
+      raw: context.includeRaw ? sanitizeRaw(raw) : undefined,
     };
   } catch (error) {
     const current = toLookupError(error);
@@ -83,7 +87,7 @@ export async function profileAdapter(context: AdapterContext): Promise<AdapterOu
     throw attachAdapterFailure(current, {
       sources,
       raw: context.includeRaw ? sanitizeRaw(raw) : undefined,
-      attemptCount: attempts
+      attemptCount: attempts,
     });
   }
 }

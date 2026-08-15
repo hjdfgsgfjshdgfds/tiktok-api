@@ -1,4 +1,3 @@
-
 .post-cover img {
   width: 100%;
   height: 100%;
@@ -162,7 +161,7 @@
   flex: none;
   border-right: 1.5px solid #66758c;
   border-bottom: 1.5px solid #66758c;
-  content: "";
+  content: '';
   transform: rotate(45deg) translateY(-2px);
   transition: transform 180ms ease;
 }
@@ -466,7 +465,7 @@
 .skeleton::after {
   position: absolute;
   inset: 0;
-  content: "";
+  content: '';
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.055), transparent);
   background-size: 200% 100%;
   animation: shimmer 1.5s linear infinite;

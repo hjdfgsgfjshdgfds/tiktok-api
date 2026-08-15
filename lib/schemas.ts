@@ -2,12 +2,12 @@ import { z } from 'zod';
 
 export const lookupRequestSchema = z.object({
   query: z.string().min(1).max(500),
-  includeRaw: z.boolean().default(false)
+  includeRaw: z.boolean().default(false),
 });
 
 const mediaSchema = z
   .object({
-    url_list: z.array(z.string()).optional()
+    url_list: z.array(z.string()).optional(),
   })
   .passthrough();
 
@@ -29,7 +29,7 @@ export const legacyUserSchema = z
     signature: z.string().optional(),
     total_favorited: z.number().optional(),
     uid: z.string().optional(),
-    unique_id: z.string().optional()
+    unique_id: z.string().optional(),
   })
   .passthrough();
 
@@ -46,10 +46,10 @@ export const legacyPostSchema = z
     region: z.string().optional(),
     statistics: z.record(z.unknown()).optional(),
     status: z.record(z.unknown()).optional(),
-    video: z.record(z.unknown()).optional()
+    video: z.record(z.unknown()).optional(),
   })
   .passthrough();
 
 export const signerResponseSchema = z.object({
-  signedUrl: z.string().url()
+  signedUrl: z.string().url(),
 });

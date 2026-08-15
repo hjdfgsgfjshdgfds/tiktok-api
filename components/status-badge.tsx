@@ -6,7 +6,7 @@ const labels: Record<ValidationStatus, string> = {
   partial: 'Validated · partial data',
   target_missing: 'Target missing',
   unsupported: 'Unsupported',
-  failed: 'Validation failed'
+  failed: 'Validation failed',
 };
 
 export function StatusBadge({ status }: { status: ValidationStatus }) {

@@ -45,7 +45,9 @@ export function ProfileResult({ data }: { data: ProfileData }) {
             ) : null}
             {data.privateAccount ? <span className="privacy-tag">Private</span> : null}
           </div>
-          {data.nickname && data.username ? <p className="entity-handle">@{data.username}</p> : null}
+          {data.nickname && data.username ? (
+            <p className="entity-handle">@{data.username}</p>
+          ) : null}
           {data.signature ? <p className="entity-description">{data.signature}</p> : null}
         </div>
       </div>

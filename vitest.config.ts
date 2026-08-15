@@ -8,13 +8,13 @@ export default defineConfig({
     coverage: {
       reporter: ['text', 'html'],
       include: ['lib/**/*.ts'],
-      exclude: ['lib/env.ts']
-    }
+      exclude: ['lib/env.ts'],
+    },
   },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('.', import.meta.url)),
-      'server-only': fileURLToPath(new URL('./tests/support/server-only.ts', import.meta.url))
-    }
-  }
+      'server-only': fileURLToPath(new URL('./tests/support/server-only.ts', import.meta.url)),
+    },
+  },
 });

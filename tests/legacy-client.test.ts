@@ -35,19 +35,18 @@ describe('LegacyTikTokClient', () => {
       'fetch',
       vi.fn(async (input: URL | RequestInfo, init?: RequestInit) => {
         if (String(input) === 'https://signer.example/sign') return signerResponse(init);
-        return new Response(
-          '{"status_code":0,"aweme_detail":{"aweme_id":7399999999999999991}}',
-          { status: 200 },
-        );
+        return new Response('{"status_code":0,"aweme_detail":{"aweme_id":7399999999999999991}}', {
+          status: 200,
+        });
       }),
     );
 
     const response = await new LegacyTikTokClient().get('/aweme/v1/aweme/detail/', {
-      aweme_id: '7399999999999999991'
+      aweme_id: '7399999999999999991',
     });
     expect(response.data).toEqual({
       status_code: 0,
-      aweme_detail: { aweme_id: '7399999999999999991' }
+      aweme_detail: { aweme_id: '7399999999999999991' },
     });
   });
 
@@ -66,7 +65,7 @@ describe('LegacyTikTokClient', () => {
     );
 
     await new LegacyTikTokClient().get('/aweme/v1/aweme/detail/', {
-      aweme_id: '7399999999999999991'
+      aweme_id: '7399999999999999991',
     });
 
     expect(unsignedUrl).toContain('timezone_name=Australia/Brisbane');
@@ -87,7 +86,7 @@ describe('LegacyTikTokClient', () => {
 
     await expect(
       new LegacyTikTokClient().get('/aweme/v1/aweme/detail/', {
-        aweme_id: '7399999999999999991'
+        aweme_id: '7399999999999999991',
       }),
     ).rejects.toMatchObject({ code: 'upstream_malformed' });
   });
@@ -104,7 +103,7 @@ describe('LegacyTikTokClient', () => {
 
     await expect(
       new LegacyTikTokClient().get('/aweme/v1/aweme/detail/', {
-        aweme_id: '7399999999999999991'
+        aweme_id: '7399999999999999991',
       }),
     ).rejects.toMatchObject({ code: 'upstream_malformed' });
   });
@@ -148,17 +147,18 @@ describe('LegacyTikTokClient', () => {
   });
 
   it('rejects a signer response that changes the target host', async () => {
-    const fetchMock = vi.fn(async () =>
-      new Response(
-        JSON.stringify({ signedUrl: 'https://evil.example/aweme/v1/aweme/detail/?aweme_id=1' }),
-        { status: 200, headers: { 'content-type': 'application/json' } },
-      ),
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({ signedUrl: 'https://evil.example/aweme/v1/aweme/detail/?aweme_id=1' }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
     );
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(
       new LegacyTikTokClient().get('/aweme/v1/aweme/detail/', {
-        aweme_id: '7399999999999999991'
+        aweme_id: '7399999999999999991',
       }),
     ).rejects.toMatchObject({ code: 'upstream_auth' });
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -169,7 +169,7 @@ describe('LegacyTikTokClient', () => {
       const body = JSON.parse(String(init?.body)) as { url: string };
       return new Response(
         JSON.stringify({
-          signedUrl: `${body.url}&aweme_id=7399999999999999998&as=test-as&cp=test-cp&mas=test-mas`
+          signedUrl: `${body.url}&aweme_id=7399999999999999998&as=test-as&cp=test-cp&mas=test-mas`,
         }),
         { status: 200, headers: { 'content-type': 'application/json' } },
       );
@@ -178,7 +178,7 @@ describe('LegacyTikTokClient', () => {
 
     await expect(
       new LegacyTikTokClient().get('/aweme/v1/aweme/detail/', {
-        aweme_id: '7399999999999999991'
+        aweme_id: '7399999999999999991',
       }),
     ).rejects.toMatchObject({ code: 'upstream_auth' });
     expect(fetchMock).toHaveBeenCalledTimes(1);

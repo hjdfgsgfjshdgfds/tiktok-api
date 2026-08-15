@@ -3,7 +3,7 @@ import type { LookupIssue } from '@/lib/types';
 
 export function IssueList({
   issues,
-  tone = 'warning'
+  tone = 'warning',
 }: {
   issues: LookupIssue[];
   tone?: 'warning' | 'error';

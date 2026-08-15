@@ -13,7 +13,7 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     successCondition: 'HTTP success, status_code === 0, user object present',
     targetValidation: 'user.uid must exactly match the requested user ID when supplied',
     evidence: 'src/index.ts#getUser and src/types/user.d.ts',
-    note: 'Legacy TikTok 9.1.0-era endpoint. Requires an external signer and device parameters.'
+    note: 'Legacy TikTok 9.1.0-era endpoint. Requires an external signer and device parameters.',
   },
   {
     id: 'legacy-user-search',
@@ -27,7 +27,7 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     successCondition: 'HTTP success, status_code === 0, user_list present',
     targetValidation: 'user_info.unique_id must exactly match the normalized username',
     evidence: 'src/index.ts#searchUsers and src/types/search.d.ts',
-    note: 'Used only to resolve a username to uid before the profile lookup.'
+    note: 'Used only to resolve a username to uid before the profile lookup.',
   },
   {
     id: 'legacy-aweme-detail',
@@ -41,7 +41,7 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     successCondition: 'HTTP success, status_code === 0, aweme_detail present',
     targetValidation: 'aweme_detail.aweme_id must exactly match the requested ID',
     evidence: 'src/index.ts#getPost, src/types/post.d.ts, and test/post.spec.ts',
-    note: 'The connected repository does not contain the modern api16 feed-host implementation.'
+    note: 'The connected repository does not contain the modern api16 feed-host implementation.',
   },
   {
     id: 'legacy-feed',
@@ -55,7 +55,7 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     successCondition: 'HTTP success, status_code === 0, aweme_list present',
     targetValidation: 'Search aweme_list for an exact aweme_id before returning any item',
     evidence: 'src/index.ts#listForYouFeed/listFollowingFeed and src/types/feed.d.ts',
-    note: 'Repository evidence is for feed listing, not a target-specific current host request.'
+    note: 'Repository evidence is for feed listing, not a target-specific current host request.',
   },
   {
     id: 'legacy-followers',
@@ -69,7 +69,7 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     successCondition: 'HTTP success, status_code === 0, followers list present',
     targetValidation: 'Request user_id must be preserved as a string',
     evidence: 'src/index.ts#listFollowers and src/types/follower.d.ts',
-    note: 'Documented but not exposed by the lookup UI.'
+    note: 'Documented but not exposed by the lookup UI.',
   },
   {
     id: 'legacy-following',
@@ -83,7 +83,7 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     successCondition: 'HTTP success, status_code === 0, followings list present',
     targetValidation: 'Request user_id must be preserved as a string',
     evidence: 'src/index.ts#listFollowing and src/types/follower.d.ts',
-    note: 'Documented but not exposed by the lookup UI.'
+    note: 'Documented but not exposed by the lookup UI.',
   },
   {
     id: 'legacy-comments',
@@ -97,7 +97,7 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     successCondition: 'HTTP success, status_code === 0, comments list present',
     targetValidation: 'Each returned comment.aweme_id should match the requested aweme ID',
     evidence: 'src/index.ts#listComments and src/types/comment.d.ts',
-    note: 'Documented but not exposed by the lookup UI.'
+    note: 'Documented but not exposed by the lookup UI.',
   },
   {
     id: 'story',
@@ -111,7 +111,7 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     successCondition: 'No repository-backed success condition exists',
     targetValidation: 'No repository-backed validation rule exists',
     evidence: 'No story endpoint or response type found in the connected repository',
-    note: 'Intentionally omitted rather than fabricated.'
+    note: 'Intentionally omitted rather than fabricated.',
   },
   {
     id: 'modern-aweme-feed-target',
@@ -126,7 +126,6 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     targetValidation: 'Would require exact aweme_list matching and optional author UID validation',
     evidence:
       'Brief plus older signature research in huaerxiela/douyin-algorithm and incomplete examples in edwinjson/tiktok-api; neither proves this request',
-    note:
-      'Hard-disabled: reviewed signature sources are outdated, incomplete, unsafe to embed as-is, or not licensed for copying.'
-  }
+    note: 'Hard-disabled: reviewed signature sources are outdated, incomplete, unsafe to embed as-is, or not licensed for copying.',
+  },
 ];

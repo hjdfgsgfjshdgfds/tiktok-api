@@ -3,7 +3,7 @@ import { createMockPost, createMockUser, MOCK_IDS } from '@/lib/mock/fixtures';
 import {
   validateExactAweme,
   validateExactUsernameSearch,
-  validateProfileResponse
+  validateProfileResponse,
 } from '@/lib/validation';
 
 async function expectLookupCode(callback: () => unknown, code: string) {
@@ -19,7 +19,7 @@ describe('response validation', () => {
   it('selects the exact requested Aweme from aweme_list', () => {
     const response = {
       status_code: 0,
-      aweme_list: [createMockPost(MOCK_IDS.wrongPost), createMockPost(MOCK_IDS.post)]
+      aweme_list: [createMockPost(MOCK_IDS.wrongPost), createMockPost(MOCK_IDS.post)],
     };
     const validated = validateExactAweme(response, MOCK_IDS.post);
     expect(validated.path).toBe('aweme_list[1]');

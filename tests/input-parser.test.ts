@@ -15,7 +15,7 @@ describe('parseLookupInput', () => {
     expect(parseLookupInput('  @Example.Name  ')).toMatchObject({
       type: 'username',
       value: 'example.name',
-      username: 'example.name'
+      username: 'example.name',
     });
   });
 
@@ -23,7 +23,7 @@ describe('parseLookupInput', () => {
     expect(parseLookupInput('https://www.tiktok.com/@Example_Name/')).toMatchObject({
       type: 'username',
       username: 'example_name',
-      canonicalUrl: 'https://www.tiktok.com/@example_name'
+      canonicalUrl: 'https://www.tiktok.com/@example_name',
     });
   });
 
@@ -35,14 +35,14 @@ describe('parseLookupInput', () => {
       type: 'video_url',
       username: 'example',
       awemeId: '7399999999999999991',
-      canonicalUrl: 'https://www.tiktok.com/@example/video/7399999999999999991'
+      canonicalUrl: 'https://www.tiktok.com/@example/video/7399999999999999991',
     });
   });
 
   it('parses a legacy direct video URL', () => {
     expect(parseLookupInput('https://m.tiktok.com/v/7399999999999999991.html')).toMatchObject({
       type: 'video_url',
-      awemeId: '7399999999999999991'
+      awemeId: '7399999999999999991',
     });
   });
 
@@ -59,14 +59,14 @@ describe('parseLookupInput', () => {
       original: 'user:6800000000000000001',
       type: 'user_id',
       value: '6800000000000000001',
-      userId: '6800000000000000001'
+      userId: '6800000000000000001',
     });
   });
 
   it('supports explicit Aweme IDs', () => {
     expect(parseLookupInput('aweme:7399999999999999991')).toMatchObject({
       type: 'aweme_id',
-      awemeId: '7399999999999999991'
+      awemeId: '7399999999999999991',
     });
   });
 
@@ -74,12 +74,15 @@ describe('parseLookupInput', () => {
     expect(parseLookupInput('123456789012345678')).toMatchObject({
       type: 'user_id',
       userId: '123456789012345678',
-      numericAmbiguous: true
+      numericAmbiguous: true,
     });
   });
 
   it('rejects unsupported domains', () => {
-    expectCode(() => parseLookupInput('https://example.com/@name/video/7399999999999999991'), 'unsupported_input');
+    expectCode(
+      () => parseLookupInput('https://example.com/@name/video/7399999999999999991'),
+      'unsupported_input',
+    );
   });
 
   it('rejects short links rather than following arbitrary redirects', () => {

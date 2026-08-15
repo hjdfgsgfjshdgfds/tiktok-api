@@ -3,7 +3,9 @@ import { isRecord } from '@/lib/utils';
 
 export function mediaUrls(value: unknown): string[] {
   if (!isRecord(value) || !Array.isArray(value.url_list)) return [];
-  return [...new Set(value.url_list.map(safePublicMediaUrl).filter((url): url is string => Boolean(url)))];
+  return [
+    ...new Set(value.url_list.map(safePublicMediaUrl).filter((url): url is string => Boolean(url))),
+  ];
 }
 
 export function stringValue(value: unknown): string | undefined {

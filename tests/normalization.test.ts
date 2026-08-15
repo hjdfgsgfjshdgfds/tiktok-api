@@ -14,7 +14,7 @@ describe('normalization provenance', () => {
       user,
       rootPath: 'user',
       sourceEndpoint: 'GET mock.local/aweme/v1/user/',
-      retrievedAt
+      retrievedAt,
     });
 
     expect(normalized.data.avatar).toBe('/mock-avatar.svg');
@@ -32,7 +32,7 @@ describe('normalization provenance', () => {
       post,
       rootPath: 'aweme_detail',
       sourceEndpoint: 'GET mock.local/aweme/v1/aweme/detail/',
-      retrievedAt
+      retrievedAt,
     });
 
     expect(normalized.data.cover).toBe('/mock-cover.svg');
@@ -51,7 +51,7 @@ describe('normalization provenance', () => {
       post,
       rootPath: 'aweme_detail',
       sourceEndpoint: 'GET mock.local/aweme/v1/aweme/detail/',
-      retrievedAt
+      retrievedAt,
     });
 
     expect(normalized.data.downloadAllowed).toBeUndefined();

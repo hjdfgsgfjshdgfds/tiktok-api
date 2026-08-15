@@ -36,7 +36,7 @@ export class InMemoryRateLimiter {
       allowed: current.count <= this.limit,
       limit: this.limit,
       remaining: Math.max(0, this.limit - current.count),
-      resetAt: current.resetAt
+      resetAt: current.resetAt,
     };
   }
 

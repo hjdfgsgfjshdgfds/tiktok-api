@@ -68,11 +68,11 @@ The current example is `user.create_time`, displayed as **Account created (legac
 
 Aweme Lens uses the following exact labels:
 
-| Upstream path | Display label |
-|---|---|
-| `aweme_detail.region` | Selected Aweme region |
-| `aweme_detail.author.region` | Author region |
-| `user.region` | Profile region |
+| Upstream path                | Display label         |
+| ---------------------------- | --------------------- |
+| `aweme_detail.region`        | Selected Aweme region |
+| `aweme_detail.author.region` | Author region         |
+| `user.region`                | Profile region        |
 
 None of these fields is automatically called:
 

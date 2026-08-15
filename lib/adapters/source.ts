@@ -26,8 +26,7 @@ export function makeSource(
     httpStatus: options.httpStatus,
     validation: options.validation,
     note:
-      options.note ??
-      (mode === 'mock' ? 'Sanitized repository-shaped fixture.' : capability.note)
+      options.note ?? (mode === 'mock' ? 'Sanitized repository-shaped fixture.' : capability.note),
   };
 }
 
@@ -53,6 +52,6 @@ export function attachAdapterFailure(
     warnings: current.warnings,
     raw: options.raw ?? current.raw,
     attemptCount: options.attemptCount + current.attemptCount,
-    validationStatus: current.validationStatus
+    validationStatus: current.validationStatus,
   });
 }

@@ -17,10 +17,7 @@ let limiterSignature = '';
 function getLimiter(env: ServerEnv): InMemoryRateLimiter {
   const signature = `${env.rateLimitMax}:${env.rateLimitWindowSeconds}`;
   if (!limiter || signature !== limiterSignature) {
-    limiter = new InMemoryRateLimiter(
-      env.rateLimitMax,
-      env.rateLimitWindowSeconds * 1000,
-    );
+    limiter = new InMemoryRateLimiter(env.rateLimitMax, env.rateLimitWindowSeconds * 1000);
     limiterSignature = signature;
   }
   return limiter;
@@ -35,22 +32,19 @@ export async function POST(request: Request): Promise<NextResponse> {
     logEvent('error', {
       requestId,
       event: 'server_configuration_invalid',
-      status: 500
+      status: 500,
     });
     const execution = createErrorExecution({
-      error: new LookupError(
-        'internal_error',
-        'The lookup service is not configured correctly.',
-      ),
+      error: new LookupError('internal_error', 'The lookup service is not configured correctly.'),
       requestId,
-      mode: 'mock'
+      mode: 'mock',
     });
     return NextResponse.json(execution.result, {
       status: execution.status,
       headers: {
         'cache-control': 'no-store',
-        'x-request-id': requestId
-      }
+        'x-request-id': requestId,
+      },
     });
   }
 
@@ -60,7 +54,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     'x-request-id': requestId,
     'x-ratelimit-limit': String(rate.limit),
     'x-ratelimit-remaining': String(rate.remaining),
-    'x-ratelimit-reset': String(Math.ceil(rate.resetAt / 1000))
+    'x-ratelimit-reset': String(Math.ceil(rate.resetAt / 1000)),
   };
 
   if (!rate.allowed) {
@@ -68,10 +62,10 @@ export async function POST(request: Request): Promise<NextResponse> {
       error: new LookupError('upstream_rate_limited', 'Too many lookup requests from this IP.', {
         status: 429,
         retryable: true,
-        detail: `Try again after ${new Date(rate.resetAt).toISOString()}.`
+        detail: `Try again after ${new Date(rate.resetAt).toISOString()}.`,
       }),
       requestId,
-      mode: env.mode
+      mode: env.mode,
     });
     return NextResponse.json(execution.result, { status: execution.status, headers });
   }
@@ -81,7 +75,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const execution = createErrorExecution({
       error: new LookupError('invalid_input', 'The request body is too large.'),
       requestId,
-      mode: env.mode
+      mode: env.mode,
     });
     return NextResponse.json(execution.result, { status: execution.status, headers });
   }
@@ -93,7 +87,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const execution = createErrorExecution({
       error: new LookupError('invalid_input', 'The request body could not be read.'),
       requestId,
-      mode: env.mode
+      mode: env.mode,
     });
     return NextResponse.json(execution.result, { status: execution.status, headers });
   }
@@ -102,7 +96,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const execution = createErrorExecution({
       error: new LookupError('invalid_input', 'The request body is too large.'),
       requestId,
-      mode: env.mode
+      mode: env.mode,
     });
     return NextResponse.json(execution.result, { status: execution.status, headers });
   }
@@ -114,7 +108,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const execution = createErrorExecution({
       error: new LookupError('invalid_input', 'The request body must be valid JSON.'),
       requestId,
-      mode: env.mode
+      mode: env.mode,
     });
     return NextResponse.json(execution.result, { status: execution.status, headers });
   }
@@ -123,12 +117,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!parsed.success) {
     const execution = createErrorExecution({
       error: new LookupError('invalid_input', 'The lookup request is invalid.', {
-        detail: parsed.error.issues
-          .map((issue: { message: string }) => issue.message)
-          .join('; ')
+        detail: parsed.error.issues.map((issue: { message: string }) => issue.message).join('; '),
       }),
       requestId,
-      mode: env.mode
+      mode: env.mode,
     });
     return NextResponse.json(execution.result, { status: execution.status, headers });
   }
@@ -136,7 +128,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   const execution = await runLookup({
     query: parsed.data.query,
     includeRaw: parsed.data.includeRaw,
-    requestId
+    requestId,
   });
   return NextResponse.json(execution.result, { status: execution.status, headers });
 }

@@ -25,7 +25,7 @@ const optionalHttpsUrl = z.preprocess(
     .trim()
     .url()
     .refine((value: string) => new URL(value).protocol === 'https:', {
-      message: 'URL must use HTTPS'
+      message: 'URL must use HTTPS',
     })
     .optional(),
 );
@@ -59,7 +59,7 @@ const cookieHeader = z
   .min(1)
   .max(8192)
   .refine((value: string) => !/[\r\n\u0000]/.test(value), {
-    message: 'must not contain newline or null characters'
+    message: 'must not contain newline or null characters',
   });
 
 const envSchema = z.object({
@@ -86,7 +86,7 @@ const envSchema = z.object({
       .max(64)
       .regex(/^[A-Fa-f0-9]+$/, 'must contain hexadecimal characters only'),
   ),
-  TIKTOK_COOKIE: optionalValue(cookieHeader)
+  TIKTOK_COOKIE: optionalValue(cookieHeader),
 });
 
 export interface ServerEnv {
@@ -120,8 +120,9 @@ export function getServerEnv(): ServerEnv {
   const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
     const detail = parsed.error.issues
-      .map((issue: { path: Array<string | number>; message: string }) =>
-        `${issue.path.join('.') || 'environment'}: ${issue.message}`,
+      .map(
+        (issue: { path: Array<string | number>; message: string }) =>
+          `${issue.path.join('.') || 'environment'}: ${issue.message}`,
       )
       .join('; ');
     throw new Error(`Invalid server environment: ${detail}`);
@@ -155,15 +156,17 @@ export function getServerEnv(): ServerEnv {
       fp: source.TIKTOK_FP,
       iid: source.TIKTOK_IID,
       openudid: source.TIKTOK_OPENUDID,
-      cookie: source.TIKTOK_COOKIE
-    }
+      cookie: source.TIKTOK_COOKIE,
+    },
   };
 
   return cachedEnv;
 }
 
 export function assertLegacyLiveConfigured(env = getServerEnv()): asserts env is ServerEnv & {
-  legacy: Required<Pick<ServerEnv['legacy'], 'signerUrl' | 'deviceId' | 'fp' | 'iid' | 'openudid'>> &
+  legacy: Required<
+    Pick<ServerEnv['legacy'], 'signerUrl' | 'deviceId' | 'fp' | 'iid' | 'openudid'>
+  > &
     ServerEnv['legacy'];
 } {
   const missing = [
@@ -171,7 +174,7 @@ export function assertLegacyLiveConfigured(env = getServerEnv()): asserts env is
     ['TIKTOK_DEVICE_ID', env.legacy.deviceId],
     ['TIKTOK_FP', env.legacy.fp],
     ['TIKTOK_IID', env.legacy.iid],
-    ['TIKTOK_OPENUDID', env.legacy.openudid]
+    ['TIKTOK_OPENUDID', env.legacy.openudid],
   ]
     .filter(([, value]) => !value)
     .map(([name]) => name);

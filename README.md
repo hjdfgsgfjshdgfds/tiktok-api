@@ -27,14 +27,14 @@ The application is complete and credential-free in **mock mode**. Its **legacy-l
 
 ## Supported inputs
 
-| Input | Example | Resolution |
-|---|---|---|
-| Username | `example` or `@example` | Exact username search, then profile by permanent user ID |
-| Profile URL | `https://www.tiktok.com/@example` | Username lookup |
-| Video URL | `https://www.tiktok.com/@example/video/7399999999999999991` | Exact Aweme lookup |
-| Explicit user ID | `user:6800000000000000001` | Profile lookup |
-| Explicit Aweme ID | `aweme:7399999999999999991` | Post lookup |
-| Bare numeric ID | `7399999999999999991` | Likely type first, exact-target fallback when needed |
+| Input             | Example                                                     | Resolution                                               |
+| ----------------- | ----------------------------------------------------------- | -------------------------------------------------------- |
+| Username          | `example` or `@example`                                     | Exact username search, then profile by permanent user ID |
+| Profile URL       | `https://www.tiktok.com/@example`                           | Username lookup                                          |
+| Video URL         | `https://www.tiktok.com/@example/video/7399999999999999991` | Exact Aweme lookup                                       |
+| Explicit user ID  | `user:6800000000000000001`                                  | Profile lookup                                           |
+| Explicit Aweme ID | `aweme:7399999999999999991`                                 | Post lookup                                              |
+| Bare numeric ID   | `7399999999999999991`                                       | Likely type first, exact-target fallback when needed     |
 
 Bare numeric IDs are ambiguous because both user IDs and post IDs can be long decimal strings. The API reports fallback attempts rather than silently guessing.
 
@@ -78,15 +78,15 @@ Neither inspected tree supplies a licensed, self-contained, tested implementatio
 
 ## Capability matrix
 
-| Capability | Mock | Legacy-live | Claim |
-|---|---:|---:|---|
-| Username → exact profile | Yes | Experimental | No current compatibility claim |
-| User ID → profile | Yes | Experimental | No current compatibility claim |
-| Video URL / Aweme ID → legacy detail | Yes | Experimental | No current compatibility claim |
-| Exact matching inside `aweme_list` | Tested | Validation utility | No modern target-feed request included |
-| Story lookup | No | No | Unsupported |
-| Modern TikTok signing | No | Operator bridge only | Not included |
-| Locked region/account origin | No | No | Omitted because evidence is absent |
+| Capability                           |   Mock |          Legacy-live | Claim                                  |
+| ------------------------------------ | -----: | -------------------: | -------------------------------------- |
+| Username → exact profile             |    Yes |         Experimental | No current compatibility claim         |
+| User ID → profile                    |    Yes |         Experimental | No current compatibility claim         |
+| Video URL / Aweme ID → legacy detail |    Yes |         Experimental | No current compatibility claim         |
+| Exact matching inside `aweme_list`   | Tested |   Validation utility | No modern target-feed request included |
+| Story lookup                         |     No |                   No | Unsupported                            |
+| Modern TikTok signing                |     No | Operator bridge only | Not included                           |
+| Locked region/account origin         |     No |                   No | Omitted because evidence is absent     |
 
 ## Local setup
 
@@ -102,19 +102,19 @@ Open `http://localhost:3000`. `LOOKUP_MODE=mock` is the default and requires no 
 
 ### Useful mock inputs
 
-| Input | Scenario |
-|---|---|
-| `@example` | Successful profile |
-| `@private` | Private profile |
-| `@partial` | Partial profile |
-| `@unavailable` | Target missing |
-| `@malformed` | Malformed upstream response |
-| `@forbidden` | 403-equivalent error |
-| `@ratelimited` | 429-equivalent error |
-| `@timeout` | Timeout |
-| `7399999999999999991` | Successful Aweme |
-| `7399999999999999992` | Target-missing Aweme |
-| `7399999999999999997` | Partial Aweme |
+| Input                 | Scenario                                 |
+| --------------------- | ---------------------------------------- |
+| `@example`            | Successful profile                       |
+| `@private`            | Private profile                          |
+| `@partial`            | Partial profile                          |
+| `@unavailable`        | Target missing                           |
+| `@malformed`          | Malformed upstream response              |
+| `@forbidden`          | 403-equivalent error                     |
+| `@ratelimited`        | 429-equivalent error                     |
+| `@timeout`            | Timeout                                  |
+| `7399999999999999991` | Successful Aweme                         |
+| `7399999999999999992` | Target-missing Aweme                     |
+| `7399999999999999997` | Partial Aweme                            |
 | `6800000000000000001` | Ambiguous numeric ID resolved to profile |
 
 ## Experimental legacy-live mode
@@ -137,23 +137,23 @@ The operator-owned signer bridge receives an unsigned URL, timestamp, and device
 
 ## Environment variables
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `LOOKUP_MODE` | `mock` | `mock` or `legacy-live` |
-| `ALLOW_RAW_VIEWER` | `true` | Permit sanitized raw output |
-| `LOOKUP_BUDGET_MS` | `45000` | End-to-end lookup budget |
-| `REQUEST_TIMEOUT_MS` | `8000` | Per-network-call timeout |
-| `TARGET_MISSING_RETRIES` | `1` | Additional exact-target retries |
-| `CACHE_TTL_SECONDS` | `60` | Successful response lifetime |
-| `CACHE_MAX_ENTRIES` | `100` | In-memory cache bound |
-| `RATE_LIMIT_MAX` | `30` | Requests per local limiter window |
-| `RATE_LIMIT_WINDOW_SECONDS` | `60` | Local limiter window |
-| `UPSTREAM_COOLDOWN_SECONDS` | `60` | Cooldown after 403/429 |
-| `TIKTOK_LEGACY_BASE_URL` | legacy host | Fixed legacy upstream base |
-| `TIKTOK_SIGNER_URL` | unset | Server-side signer bridge |
-| `TIKTOK_SIGNER_TOKEN` | unset | Optional bridge credential |
-| `TIKTOK_DEVICE_ID`, `TIKTOK_FP`, `TIKTOK_IID`, `TIKTOK_OPENUDID` | unset | Legacy device context |
-| `TIKTOK_COOKIE` | unset | Optional server-only cookie |
+| Variable                                                         | Default     | Purpose                           |
+| ---------------------------------------------------------------- | ----------- | --------------------------------- |
+| `LOOKUP_MODE`                                                    | `mock`      | `mock` or `legacy-live`           |
+| `ALLOW_RAW_VIEWER`                                               | `true`      | Permit sanitized raw output       |
+| `LOOKUP_BUDGET_MS`                                               | `45000`     | End-to-end lookup budget          |
+| `REQUEST_TIMEOUT_MS`                                             | `8000`      | Per-network-call timeout          |
+| `TARGET_MISSING_RETRIES`                                         | `1`         | Additional exact-target retries   |
+| `CACHE_TTL_SECONDS`                                              | `60`        | Successful response lifetime      |
+| `CACHE_MAX_ENTRIES`                                              | `100`       | In-memory cache bound             |
+| `RATE_LIMIT_MAX`                                                 | `30`        | Requests per local limiter window |
+| `RATE_LIMIT_WINDOW_SECONDS`                                      | `60`        | Local limiter window              |
+| `UPSTREAM_COOLDOWN_SECONDS`                                      | `60`        | Cooldown after 403/429            |
+| `TIKTOK_LEGACY_BASE_URL`                                         | legacy host | Fixed legacy upstream base        |
+| `TIKTOK_SIGNER_URL`                                              | unset       | Server-side signer bridge         |
+| `TIKTOK_SIGNER_TOKEN`                                            | unset       | Optional bridge credential        |
+| `TIKTOK_DEVICE_ID`, `TIKTOK_FP`, `TIKTOK_IID`, `TIKTOK_OPENUDID` | unset       | Legacy device context             |
+| `TIKTOK_COOKIE`                                                  | unset       | Optional server-only cookie       |
 
 Environment parsing fails closed when live mode is incomplete.
 

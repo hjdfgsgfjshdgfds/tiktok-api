@@ -11,7 +11,7 @@ const base = {
   strokeWidth: 1.8,
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
-  'aria-hidden': true
+  'aria-hidden': true,
 };
 
 export function SearchIcon(props: IconProps) {

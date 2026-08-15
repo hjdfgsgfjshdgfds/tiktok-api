@@ -9,7 +9,7 @@ export const MOCK_IDS = {
   rateLimitedPost: '7399999999999999995',
   timeoutPost: '7399999999999999996',
   partialPost: '7399999999999999997',
-  wrongPost: '7399999999999999998'
+  wrongPost: '7399999999999999998',
 } as const;
 
 interface MockProfileOptions {
@@ -52,7 +52,7 @@ export function createMockUser(options: MockProfileOptions): Record<string, unkn
     uid: options.uid,
     unique_id: options.username,
     verification_type: options.username === 'example' ? 1 : 0,
-    youtube_channel_id: ''
+    youtube_channel_id: '',
   };
 
   if (options.partial) {
@@ -94,11 +94,11 @@ export function createMockPost(
       owner_nickname: 'Mock Artist',
       play_url: {
         url_list: [
-          'https://v16.tiktokcdn.com/audio/mock.mp3?auth_key=fake-secret&device_id=123456789'
-        ]
+          'https://v16.tiktokcdn.com/audio/mock.mp3?auth_key=fake-secret&device_id=123456789',
+        ],
       },
       title: 'Fixture Signal',
-      user_count: 1200
+      user_count: 1200,
     },
     prevent_download: false,
     rate: 12,
@@ -107,11 +107,11 @@ export function createMockPost(
       content: '',
       risk_sink: false,
       type: 0,
-      warn: false
+      warn: false,
     },
     share_info: {
       share_title: 'Mock post',
-      share_url: `https://www.tiktok.com/@${authorUsername}/video/${awemeId}?_signature=fake`
+      share_url: `https://www.tiktok.com/@${authorUsername}/video/${awemeId}?_signature=fake`,
     },
     share_url: `https://www.tiktok.com/@${authorUsername}/video/${awemeId}`,
     statistics: {
@@ -120,7 +120,7 @@ export function createMockPost(
       digg_count: 42900,
       forward_count: 7,
       play_count: 521000,
-      share_count: 2300
+      share_count: 2300,
     },
     status: {
       allow_comment: true,
@@ -131,7 +131,7 @@ export function createMockPost(
       is_private: false,
       is_prohibited: false,
       private_status: 0,
-      reviewed: 1
+      reviewed: 1,
     },
     text_extra: [{ hashtag_name: 'mockdata', type: 1 }],
     user_digged: 0,
@@ -139,16 +139,16 @@ export function createMockPost(
       cover: { url_list: ['/mock-cover.svg'] },
       download_addr: {
         url_list: [
-          `https://v16.tiktokcdn.com/video/${awemeId}.mp4?auth_key=fake-secret&msToken=fake-token`
-        ]
+          `https://v16.tiktokcdn.com/video/${awemeId}.mp4?auth_key=fake-secret&msToken=fake-token`,
+        ],
       },
       duration: 18400,
       has_watermark: true,
       height: 1280,
       origin_cover: { url_list: ['/mock-cover.svg'] },
       ratio: '720p',
-      width: 720
-    }
+      width: 720,
+    },
   };
 
   if (options.partial) {
@@ -166,11 +166,11 @@ export const MOCK_PROFILE_FIXTURES = {
   private: createMockUser({
     username: 'private',
     uid: MOCK_IDS.privateProfile,
-    privateAccount: true
+    privateAccount: true,
   }),
   partial: createMockUser({
     username: 'partial',
     uid: MOCK_IDS.partialProfile,
-    partial: true
-  })
+    partial: true,
+  }),
 } as const;

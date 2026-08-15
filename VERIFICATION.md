@@ -111,7 +111,6 @@ Recommended manual smoke inputs are listed in `README.md`. Commit the reviewed `
 
 The source is structurally complete, all 59 authored cases pass against the transpiled project logic in the dependency-shim runtime, and the responsive design passed static Chromium inspection. A real npm installation, official Vitest/ESLint/Prettier execution, and Next production build remain required before claiming a fully verified deployment artifact.
 
-
 ## Publication evidence update
 
 Before the GitHub publication commit, the additional repositories

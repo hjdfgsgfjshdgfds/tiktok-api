@@ -14,11 +14,7 @@ export function PostResult({ data }: { data: PostData }) {
           {data.cover ? (
             // Upstream media is allowlisted and sanitized server-side.
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={data.cover}
-              alt="Aweme cover"
-              referrerPolicy="no-referrer"
-            />
+            <img src={data.cover} alt="Aweme cover" referrerPolicy="no-referrer" />
           ) : (
             <div className="post-cover__empty">
               <PlayIcon className="h-10 w-10" />
@@ -35,9 +31,7 @@ export function PostResult({ data }: { data: PostData }) {
             <h2 className="entity-title">Aweme {data.awemeId.slice(-7)}</h2>
             {data.contentType ? <span className="privacy-tag">{data.contentType}</span> : null}
           </div>
-          {data.authorUsername ? (
-            <p className="entity-handle">by @{data.authorUsername}</p>
-          ) : null}
+          {data.authorUsername ? <p className="entity-handle">by @{data.authorUsername}</p> : null}
           {data.description ? (
             <p className="entity-description entity-description--post">{data.description}</p>
           ) : null}
@@ -77,7 +71,9 @@ export function PostResult({ data }: { data: PostData }) {
           <DataRow label="Aweme type">{data.awemeType}</DataRow>
           <DataRow label="Download allowed">
             {data.downloadAllowed !== undefined ? (
-              <span className={data.downloadAllowed ? 'boolean-tag boolean-tag--yes' : 'boolean-tag'}>
+              <span
+                className={data.downloadAllowed ? 'boolean-tag boolean-tag--yes' : 'boolean-tag'}
+              >
                 {data.downloadAllowed ? <CheckIcon /> : null}
                 {data.downloadAllowed ? 'Yes' : 'No'}
               </span>

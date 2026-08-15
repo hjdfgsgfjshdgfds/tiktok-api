@@ -11,7 +11,7 @@ describe('secret redaction', () => {
       device_id: '123456789',
       sid_tt: 'sid-secret',
       auth_key: 'auth-secret',
-      nested: { normal: id }
+      nested: { normal: id },
     });
     const text = JSON.stringify(sanitized);
     expect(text).not.toContain('real-secret');

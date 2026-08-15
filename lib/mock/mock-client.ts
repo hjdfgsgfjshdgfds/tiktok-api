@@ -5,7 +5,7 @@ import {
   createMockPost,
   createMockUser,
   MOCK_IDS,
-  MOCK_PROFILE_FIXTURES
+  MOCK_PROFILE_FIXTURES,
 } from '@/lib/mock/fixtures';
 import { sleep } from '@/lib/utils';
 
@@ -20,7 +20,7 @@ function response(data: unknown, elapsedMs = 18): UpstreamResponse {
     httpStatus: 200,
     data,
     byteLength: Buffer.byteLength(JSON.stringify(data)),
-    elapsedMs
+    elapsedMs,
   };
 }
 
@@ -63,7 +63,7 @@ export class MockTikTokClient implements EndpointClient {
       }
       if (username === 'ratelimited') {
         throw new LookupError('upstream_rate_limited', 'The mock upstream returned HTTP 429.', {
-          retryable: true
+          retryable: true,
         });
       }
       if (username === 'malformed') {
@@ -80,7 +80,7 @@ export class MockTikTokClient implements EndpointClient {
         has_more: 0,
         cursor: 1,
         type: 1,
-        extra: { now: Date.now() }
+        extra: { now: Date.now() },
       });
     }
 
@@ -91,7 +91,7 @@ export class MockTikTokClient implements EndpointClient {
         return response({
           status_code: 0,
           user: createMockUser({ username: 'different_target', uid: '6999999999999999999' }),
-          extra: { now: Date.now() }
+          extra: { now: Date.now() },
         });
       }
       return response({ status_code: 0, user, extra: { now: Date.now() } });
@@ -107,7 +107,7 @@ export class MockTikTokClient implements EndpointClient {
       }
       if (awemeId === MOCK_IDS.rateLimitedPost) {
         throw new LookupError('upstream_rate_limited', 'The mock upstream returned HTTP 429.', {
-          retryable: true
+          retryable: true,
         });
       }
       if (awemeId === MOCK_IDS.malformedPost) {
@@ -117,21 +117,21 @@ export class MockTikTokClient implements EndpointClient {
         return response({
           status_code: 0,
           aweme_list: [createMockPost(MOCK_IDS.wrongPost)],
-          extra: { now: Date.now() }
+          extra: { now: Date.now() },
         });
       }
       if (awemeId === MOCK_IDS.partialPost) {
         return response({
           status_code: 0,
           aweme_detail: createMockPost(awemeId, { partial: true }),
-          extra: { now: Date.now() }
+          extra: { now: Date.now() },
         });
       }
 
       return response({
         status_code: 0,
         aweme_detail: createMockPost(awemeId || MOCK_IDS.post),
-        extra: { now: Date.now() }
+        extra: { now: Date.now() },
       });
     }
 

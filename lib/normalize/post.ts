@@ -30,16 +30,14 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
   const authorUserId = stringValue(author.uid) ?? stringValue(post.author_user_id);
   const coverUrls = video ? mediaUrls(video.cover) : [];
   const originCoverUrls = video ? mediaUrls(video.origin_cover) : [];
-  const coverVariants = video
-    ? uniqueStrings([...coverUrls, ...originCoverUrls])
-    : [];
   const cover = coverUrls[0] ?? originCoverUrls[0];
   const coverPath = coverUrls[0]
     ? `${rootPath}.video.cover.url_list[0]`
     : `${rootPath}.video.origin_cover.url_list[0]`;
   const rawDownloads = video ? mediaUrls(video.download_addr) : [];
   const playbackUrls = uniqueStrings(rawDownloads.map(safePublicMediaUrl));
-  const preventDownload = typeof post.prevent_download === 'boolean' ? post.prevent_download : undefined;
+  const preventDownload =
+    typeof post.prevent_download === 'boolean' ? post.prevent_download : undefined;
   const downloadStatus = numberValue(statusRaw.download_status);
   let downloadAllowed: boolean | undefined;
   if (preventDownload === true || downloadStatus === 1) {
@@ -56,7 +54,7 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
     likes: numberValue(statisticsRaw.digg_count),
     plays: numberValue(statisticsRaw.play_count),
     shares: numberValue(statisticsRaw.share_count),
-    forwards: numberValue(statisticsRaw.forward_count)
+    forwards: numberValue(statisticsRaw.forward_count),
   };
   const hasStatistics = Object.values(statistics).some((value) => value !== undefined);
 
@@ -81,24 +79,25 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
           id: stringValue(musicRaw.id),
           title: stringValue(musicRaw.title),
           author: stringValue(musicRaw.author),
-          durationSeconds: numberValue(musicRaw.duration)
+          durationSeconds: numberValue(musicRaw.duration),
         }
       : undefined,
     playbackUrls: downloadAllowed && playbackUrls.length > 0 ? playbackUrls : undefined,
     downloadAllowed,
     status: {
-      private:
-        typeof statusRaw.is_private === 'boolean' ? statusRaw.is_private : undefined,
+      private: typeof statusRaw.is_private === 'boolean' ? statusRaw.is_private : undefined,
       deleted: typeof statusRaw.is_delete === 'boolean' ? statusRaw.is_delete : undefined,
       commentsAllowed:
         typeof statusRaw.allow_comment === 'boolean' ? statusRaw.allow_comment : undefined,
       sharingAllowed:
-        typeof statusRaw.allow_share === 'boolean' ? statusRaw.allow_share : undefined
-    }
+        typeof statusRaw.allow_share === 'boolean' ? statusRaw.allow_share : undefined,
+    },
   };
 
-  if (Object.values(data.status ?? {}).every((value) => value === undefined)) data.status = undefined;
-  if (data.music && Object.values(data.music).every((value) => value === undefined)) data.music = undefined;
+  if (Object.values(data.status ?? {}).every((value) => value === undefined))
+    data.status = undefined;
+  if (data.music && Object.values(data.music).every((value) => value === undefined))
+    data.music = undefined;
 
   const fields = compactFields([
     createField({
@@ -106,21 +105,21 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
       value: data.cover,
       sourceEndpoint,
       upstreamPath: coverPath,
-      retrievedAt
+      retrievedAt,
     }),
     createField({
       label: 'Post / Aweme ID',
       value: awemeId,
       sourceEndpoint,
       upstreamPath: `${rootPath}.aweme_id`,
-      retrievedAt
+      retrievedAt,
     }),
     createField({
       label: 'Description',
       value: data.description,
       sourceEndpoint,
       upstreamPath: `${rootPath}.desc`,
-      retrievedAt
+      retrievedAt,
     }),
     createField({
       label: 'Created at',
@@ -130,14 +129,14 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
       retrievedAt,
       status: 'derived',
       origin: 'local',
-      explanation: 'Converted locally from the post creation Unix timestamp.'
+      explanation: 'Converted locally from the post creation Unix timestamp.',
     }),
     createField({
       label: 'Author username',
       value: data.authorUsername,
       sourceEndpoint,
       upstreamPath: `${rootPath}.author.unique_id`,
-      retrievedAt
+      retrievedAt,
     }),
     createField({
       label: 'Author user ID',
@@ -146,7 +145,7 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
       upstreamPath: stringValue(author.uid)
         ? `${rootPath}.author.uid`
         : `${rootPath}.author_user_id`,
-      retrievedAt
+      retrievedAt,
     }),
     createField({
       label: 'Selected Aweme region',
@@ -154,7 +153,7 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
       sourceEndpoint,
       upstreamPath: `${rootPath}.region`,
       retrievedAt,
-      explanation: 'This is the selected Aweme’s region field, not an account-origin claim.'
+      explanation: 'This is the selected Aweme’s region field, not an account-origin claim.',
     }),
     createField({
       label: 'Author region',
@@ -162,42 +161,42 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
       sourceEndpoint,
       upstreamPath: `${rootPath}.author.region`,
       retrievedAt,
-      explanation: 'Kept separate from the selected Aweme region.'
+      explanation: 'Kept separate from the selected Aweme region.',
     }),
     createField({
       label: 'Comment count',
       value: statistics.comments,
       sourceEndpoint,
       upstreamPath: `${rootPath}.statistics.comment_count`,
-      retrievedAt
+      retrievedAt,
     }),
     createField({
       label: 'Like count',
       value: statistics.likes,
       sourceEndpoint,
       upstreamPath: `${rootPath}.statistics.digg_count`,
-      retrievedAt
+      retrievedAt,
     }),
     createField({
       label: 'Play count',
       value: statistics.plays,
       sourceEndpoint,
       upstreamPath: `${rootPath}.statistics.play_count`,
-      retrievedAt
+      retrievedAt,
     }),
     createField({
       label: 'Share count',
       value: statistics.shares,
       sourceEndpoint,
       upstreamPath: `${rootPath}.statistics.share_count`,
-      retrievedAt
+      retrievedAt,
     }),
     createField({
       label: 'Forward count',
       value: statistics.forwards,
       sourceEndpoint,
       upstreamPath: `${rootPath}.statistics.forward_count`,
-      retrievedAt
+      retrievedAt,
     }),
     createField({
       label: 'Duration',
@@ -205,7 +204,7 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
       sourceEndpoint,
       upstreamPath: `${rootPath}.video.duration`,
       retrievedAt,
-      explanation: 'Duration is in milliseconds in the connected repository’s video type.'
+      explanation: 'Duration is in milliseconds in the connected repository’s video type.',
     }),
     createField({
       label: 'Content type',
@@ -215,21 +214,21 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
       retrievedAt,
       status: 'derived',
       origin: 'local',
-      explanation: 'Classified as video only when a video object is present.'
+      explanation: 'Classified as video only when a video object is present.',
     }),
     createField({
       label: 'Aweme type',
       value: data.awemeType,
       sourceEndpoint,
       upstreamPath: `${rootPath}.aweme_type`,
-      retrievedAt
+      retrievedAt,
     }),
     createField({
       label: 'Music',
       value: data.music,
       sourceEndpoint,
       upstreamPath: `${rootPath}.music`,
-      retrievedAt
+      retrievedAt,
     }),
     createField({
       label: 'Playback / download URLs',
@@ -237,7 +236,8 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
       sourceEndpoint,
       upstreamPath: `${rootPath}.video.download_addr.url_list`,
       retrievedAt,
-      explanation: 'Only returned when downloading is permitted; sensitive URL parameters are redacted.'
+      explanation:
+        'Only returned when downloading is permitted; sensitive URL parameters are redacted.',
     }),
     createField({
       label: 'Download allowed',
@@ -246,15 +246,15 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
       upstreamPath: `${rootPath}.prevent_download + ${rootPath}.status.download_status`,
       retrievedAt,
       status: 'derived',
-      origin: 'local'
+      origin: 'local',
     }),
     createField({
       label: 'Post status',
       value: data.status,
       sourceEndpoint,
       upstreamPath: `${rootPath}.status`,
-      retrievedAt
-    })
+      retrievedAt,
+    }),
   ]);
 
   const warnings: LookupIssue[] = [];
@@ -262,13 +262,14 @@ export function normalizePost(options: NormalizePostOptions): NormalizedPost {
   if (partial) {
     warnings.push({
       code: 'partial_post',
-      message: 'The requested Aweme was validated, but some expected display fields were unavailable.'
+      message:
+        'The requested Aweme was validated, but some expected display fields were unavailable.',
     });
   }
   if (rawDownloads.length > 0 && playbackUrls.length === 0) {
     warnings.push({
       code: 'media_urls_hidden',
-      message: 'Playback URLs were omitted because none passed the safe media-host policy.'
+      message: 'Playback URLs were omitted because none passed the safe media-host policy.',
     });
   }
 

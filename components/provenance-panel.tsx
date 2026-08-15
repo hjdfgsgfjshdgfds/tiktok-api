@@ -9,7 +9,7 @@ function ProvenanceValue({ field }: { field: FieldProvenance }) {
 
 export function ProvenancePanel({
   fields,
-  sources
+  sources,
 }: {
   fields: FieldProvenance[];
   sources: ResultSource[];
@@ -42,7 +42,9 @@ export function ProvenancePanel({
                     {source.method} {source.host}
                     {source.path}
                   </code>
-                  <span className={`source-state source-state--${source.validation ?? source.status}`}>
+                  <span
+                    className={`source-state source-state--${source.validation ?? source.status}`}
+                  >
                     {source.validation ?? source.status}
                   </span>
                 </div>
