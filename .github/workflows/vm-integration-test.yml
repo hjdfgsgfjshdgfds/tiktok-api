@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   vm-test:
@@ -23,6 +23,7 @@ jobs:
       TARGET_MISSING_RETRIES: '1'
       RATE_LIMIT_MAX: '100'
       RATE_LIMIT_WINDOW_SECONDS: '60'
+      NEXT_TELEMETRY_DISABLED: '1'
 
     steps:
       - name: Check out repository
@@ -32,6 +33,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
 
       - name: Record VM and runtime information
         run: |
@@ -39,42 +41,8 @@ jobs:
           node --version
           npm --version
 
-      - name: Install pinned dependencies
-        run: npm install --no-audit --no-fund
-
-      - name: Apply lint corrections discovered by the clean VM
-        shell: bash
-        run: |
-          set -euo pipefail
-          python <<'PY'
-          from pathlib import Path
-          import re
-
-          workbench = Path('components/lookup-workbench.tsx')
-          text = workbench.read_text()
-          text = text.replace('useValue', 'selectValue')
-          workbench.write_text(text)
-
-          post = Path('lib/normalize/post.ts')
-          text = post.read_text()
-          text = re.sub(
-              r"\n  const coverVariants = video\n    \? uniqueStrings\(\[\.\.\.coverUrls, \.\.\.originCoverUrls\]\)\n    : \[\];",
-              '',
-              text,
-              count=1,
-          )
-          post.write_text(text)
-
-          profile = Path('lib/normalize/profile.ts')
-          text = profile.read_text().replace(
-              "import { epochSecondsToIso, isRecord } from '@/lib/utils';",
-              "import { epochSecondsToIso } from '@/lib/utils';",
-          )
-          profile.write_text(text)
-          PY
-
-      - name: Apply repository formatting
-        run: npm run format
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
 
       - name: Check formatting
         run: npm run format:check
@@ -222,22 +190,6 @@ jobs:
             process.exitCode = 1;
           });
           NODE
-
-      - name: Commit VM-verified formatting and lockfile
-        if: success()
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -u
-          git add package-lock.json
-          if git diff --cached --quiet; then
-            echo 'No generated source changes to commit.'
-          else
-            git commit -m 'chore: apply VM-verified formatting and lock dependencies [skip ci]'
-            git push
-          fi
 
       - name: Upload VM test evidence
         if: always()
