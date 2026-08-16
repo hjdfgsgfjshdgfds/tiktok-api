@@ -1,4 +1,4 @@
-export type LookupMode = 'mock' | 'legacy-live';
+export type LookupMode = 'public-live' | 'mock' | 'legacy-live';
 
 export type InputType = 'username' | 'user_id' | 'video_url' | 'aweme_id';
 
@@ -162,7 +162,7 @@ export interface EndpointCapability {
   host: string;
   path: string;
   identifier: string;
-  status: 'experimental' | 'unsupported' | 'evidence-only';
+  status: 'enabled' | 'experimental' | 'unsupported' | 'evidence-only';
   productionEnabled: boolean;
   successCondition: string;
   targetValidation: string;
