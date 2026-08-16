@@ -63,16 +63,26 @@ const cookieHeader = z
   });
 
 const envSchema = z.object({
-  LOOKUP_MODE: z.enum(['mock', 'legacy-live']).default('mock'),
+  LOOKUP_MODE: z.enum(['public-live', 'mock', 'legacy-live']).default('public-live'),
   ALLOW_RAW_VIEWER: booleanFromString.default(true),
   LOOKUP_BUDGET_MS: integerFromString(1000, 55_000).default(45_000),
-  REQUEST_TIMEOUT_MS: integerFromString(1000, 30_000).default(8_000),
+  REQUEST_TIMEOUT_MS: integerFromString(1000, 30_000).default(10_000),
   TARGET_MISSING_RETRIES: integerFromString(0, 3).default(1),
   CACHE_TTL_SECONDS: integerFromString(0, 3600).default(60),
   CACHE_MAX_ENTRIES: integerFromString(1, 1000).default(100),
   RATE_LIMIT_MAX: integerFromString(1, 1000).default(30),
   RATE_LIMIT_WINDOW_SECONDS: integerFromString(1, 3600).default(60),
   UPSTREAM_COOLDOWN_SECONDS: integerFromString(1, 3600).default(60),
+  PUBLIC_TIKTOK_REGION: z.string().trim().regex(/^[A-Z]{2}$/).default('US'),
+  PUBLIC_TIKTOK_USER_AGENT: z
+    .string()
+    .min(20)
+    .max(512)
+    .default(
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
+    ),
+  PUBLIC_MAX_HTML_BYTES: integerFromString(100_000, 20_000_000).default(7_000_000),
+  PUBLIC_MAX_JSON_BYTES: integerFromString(100_000, 20_000_000).default(7_000_000),
   TIKTOK_LEGACY_BASE_URL: z.string().url().default('https://api2.musical.ly/'),
   TIKTOK_SIGNER_URL: optionalHttpsUrl,
   TIKTOK_SIGNER_TOKEN: optionalValue(headerToken),
@@ -100,6 +110,12 @@ export interface ServerEnv {
   rateLimitMax: number;
   rateLimitWindowSeconds: number;
   upstreamCooldownSeconds: number;
+  publicLive: {
+    region: string;
+    userAgent: string;
+    maxHtmlBytes: number;
+    maxJsonBytes: number;
+  };
   legacy: {
     baseUrl: string;
     signerUrl?: string;
@@ -148,6 +164,12 @@ export function getServerEnv(): ServerEnv {
     rateLimitMax: source.RATE_LIMIT_MAX,
     rateLimitWindowSeconds: source.RATE_LIMIT_WINDOW_SECONDS,
     upstreamCooldownSeconds: source.UPSTREAM_COOLDOWN_SECONDS,
+    publicLive: {
+      region: source.PUBLIC_TIKTOK_REGION,
+      userAgent: source.PUBLIC_TIKTOK_USER_AGENT,
+      maxHtmlBytes: source.PUBLIC_MAX_HTML_BYTES,
+      maxJsonBytes: source.PUBLIC_MAX_JSON_BYTES,
+    },
     legacy: {
       baseUrl: baseUrl.toString(),
       signerUrl: source.TIKTOK_SIGNER_URL,
