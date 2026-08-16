@@ -1,0 +1,111 @@
+name: Public live CI
+
+on:
+  push:
+    branches:
+      - research/omar-feature-parity
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      LOOKUP_MODE: public-live
+      ALLOW_RAW_VIEWER: 'true'
+      NEXT_TELEMETRY_DISABLED: '1'
+      REQUEST_TIMEOUT_MS: '12000'
+      LOOKUP_BUDGET_MS: '45000'
+      TARGET_MISSING_RETRIES: '1'
+      PUBLIC_TIKTOK_REGION: US
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify source
+        run: |
+          npm run format:check
+          npm run lint
+          npm run typecheck
+          npm run test -- --reporter=verbose
+          npm run build
+
+      - name: Start production server and run real no-login probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start > public-live-server.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3000/api/health > public-live-health.json; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then
+            cat public-live-server.log
+            exit 1
+          fi
+
+          node <<'NODE'
+          const fs = require('node:fs');
+          const base = 'http://127.0.0.1:3000';
+          const probes = ['@tiktok', '6768504823336815877', '7106686413101468970', '7574735526134058262'];
+          const results = [];
+          (async () => {
+            for (const query of probes) {
+              const response = await fetch(`${base}/api/lookup`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ query, includeRaw: false }),
+              });
+              const body = await response.json();
+              results.push({
+                query,
+                httpStatus: response.status,
+                ok: body.ok,
+                entity: body.entity?.type,
+                adapter: body.meta?.adapter,
+                validationStatus: body.meta?.validationStatus,
+                error: body.errors?.[0]?.code,
+                sources: body.sources,
+              });
+            }
+            fs.writeFileSync('public-live-probes.json', `${JSON.stringify(results, null, 2)}\n`);
+            console.log(JSON.stringify(results, null, 2));
+            if (!results.some((item) => item.ok === true && item.validationStatus !== 'target_missing')) {
+              throw new Error('No real public TikTok probe produced an exact validated result.');
+            }
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Upload public-live evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-live-evidence
+          path: |
+            public-live-server.log
+            public-live-health.json
+            public-live-probes.json
+          if-no-files-found: warn
+          retention-days: 7
