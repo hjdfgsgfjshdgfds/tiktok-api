@@ -40,7 +40,8 @@ function getCache(): LookupCache {
 }
 
 function createClient(mode: LookupMode): EndpointClient {
-  return mode === 'mock' ? new MockTikTokClient() : new LegacyTikTokClient();
+  if (mode === 'legacy-live') return new LegacyTikTokClient();
+  return new MockTikTokClient();
 }
 
 function entityForInput(input?: ParsedInput): LookupResult['entity']['type'] {
@@ -50,7 +51,10 @@ function entityForInput(input?: ParsedInput): LookupResult['entity']['type'] {
 
 function adapterForInput(input?: ParsedInput): string {
   if (!input) return 'orchestrator';
-  return input.type === 'username' || input.type === 'user_id' ? 'profileAdapter' : 'awemeAdapter';
+  if (input.type === 'username' || input.type === 'user_id') {
+    return 'profileAdapter';
+  }
+  return 'awemeAdapter';
 }
 
 function alternateNumericInput(input: ParsedInput): ParsedInput {
@@ -136,7 +140,7 @@ export function createErrorExecution(options: {
   rawValue?: string;
 }): LookupExecution {
   const error = toLookupError(options.error);
-  const mode = options.mode ?? 'mock';
+  const mode = options.mode ?? 'public-live';
   const retrievedAt = new Date().toISOString();
   const result: LookupResult = {
     ok: false,
@@ -172,7 +176,7 @@ export function createErrorExecution(options: {
 
 export async function runLookup(request: LookupRequest): Promise<LookupExecution> {
   const started = performance.now();
-  let mode: LookupMode = 'mock';
+  let mode: LookupMode = 'public-live';
   let input: ParsedInput | undefined;
   let budgetTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -184,7 +188,7 @@ export async function runLookup(request: LookupRequest): Promise<LookupExecution
     input = parseLookupInput(request.query);
     const includeRaw = request.includeRaw && env.allowRawViewer;
     const cacheKey = JSON.stringify({
-      version: 1,
+      version: 2,
       mode: env.mode,
       type: input.type,
       value: input.value,
@@ -223,6 +227,13 @@ export async function runLookup(request: LookupRequest): Promise<LookupExecution
       warnings.push({
         code: 'raw_viewer_disabled',
         message: 'Raw response viewing is disabled by the server configuration.',
+      });
+    }
+    if (env.mode === 'public-live') {
+      warnings.push({
+        code: 'public_live_no_login',
+        message:
+          'This lookup used public TikTok page data or an unauthenticated fixed-host mobile request. No TikTok login was supplied.',
       });
     }
     if (env.mode === 'legacy-live') {
