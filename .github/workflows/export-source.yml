@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - research/omar-feature-parity
+      - research/unauthenticated-user-lookup
   workflow_dispatch:
 
 permissions:
