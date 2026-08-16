@@ -17,17 +17,14 @@ export async function GET(): Promise<NextResponse> {
         mode: 'unknown',
         retrievedAt: new Date().toISOString(),
         configurationValid: false,
+        publicLiveReady: false,
         mockReady: false,
         rawViewerEnabled: false,
         legacyLiveConfigured: false,
-        evidenceBoundary:
-          'Current modern TikTok signing and api16 target-feed behavior are not present in the connected repository.',
+        evidenceBoundary: 'The server environment failed validation; no TikTok request was attempted.',
         capabilities: ENDPOINT_CAPABILITIES,
       },
-      {
-        status: 503,
-        headers: { 'cache-control': 'no-store' },
-      },
+      { status: 503, headers: { 'cache-control': 'no-store' } },
     );
   }
 
@@ -38,7 +35,7 @@ export async function GET(): Promise<NextResponse> {
       env.legacy.iid &&
       env.legacy.openudid,
   );
-  const operational = env.mode === 'mock' || legacyConfigured;
+  const operational = env.mode !== 'legacy-live' || legacyConfigured;
 
   return NextResponse.json(
     {
@@ -47,11 +44,13 @@ export async function GET(): Promise<NextResponse> {
       mode: env.mode,
       retrievedAt: new Date().toISOString(),
       configurationValid: true,
+      publicLiveReady: true,
+      publicLiveRequiresTikTokLogin: false,
       mockReady: true,
       rawViewerEnabled: env.allowRawViewer,
       legacyLiveConfigured: legacyConfigured,
       evidenceBoundary:
-        'Current modern TikTok signing and api16 target-feed behavior are not present in the connected repository.',
+        'Public-live supports current TikTok profile/video page data and the unauthenticated modern exact-Aweme feed request. Other documented web families still require their own current signed request implementation.',
       capabilities: ENDPOINT_CAPABILITIES,
     },
     {
