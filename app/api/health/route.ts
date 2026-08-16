@@ -21,7 +21,8 @@ export async function GET(): Promise<NextResponse> {
         mockReady: false,
         rawViewerEnabled: false,
         legacyLiveConfigured: false,
-        evidenceBoundary: 'The server environment failed validation; no TikTok request was attempted.',
+        evidenceBoundary:
+          'The server environment failed validation; no TikTok request was attempted.',
         capabilities: ENDPOINT_CAPABILITIES,
       },
       { status: 503, headers: { 'cache-control': 'no-store' } },

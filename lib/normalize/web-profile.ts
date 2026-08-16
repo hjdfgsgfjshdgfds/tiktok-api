@@ -107,14 +107,54 @@ export function normalizeWebProfile(options: NormalizeWebProfileOptions) {
   const language = firstValue(user, userPath, ['language', 'signature_language'], asString);
   const verified = firstValue(user, userPath, ['verified', 'is_verified'], asBoolean);
   const privateAccount = firstValue(user, userPath, ['privateAccount', 'secret'], asBoolean);
-  const followers = firstValue(stats ?? user, stats ? statsPath : userPath, ['followerCount', 'follower_count'], asNumber);
-  const following = firstValue(stats ?? user, stats ? statsPath : userPath, ['followingCount', 'following_count'], asNumber);
-  const friends = firstValue(stats ?? user, stats ? statsPath : userPath, ['friendCount', 'friendsCount', 'friend_count'], asNumber);
-  const hearts = firstValue(stats ?? user, stats ? statsPath : userPath, ['heartCount', 'heart', 'totalFavorited', 'total_favorited'], asNumber);
-  const videoCount = firstValue(stats ?? user, stats ? statsPath : userPath, ['videoCount', 'awemeCount', 'aweme_count'], asNumber);
-  const favoritingCount = firstValue(stats ?? user, stats ? statsPath : userPath, ['diggCount', 'favoritingCount', 'favoriting_count'], asNumber);
-  const nicknameModifiedAt = firstValue(user, userPath, ['nicknameModifyTime', 'nickname_modify_time'], epochToIso);
-  const usernameModifiedAt = firstValue(user, userPath, ['uniqueIdModifyTime', 'unique_id_modify_time'], epochToIso);
+  const followers = firstValue(
+    stats ?? user,
+    stats ? statsPath : userPath,
+    ['followerCount', 'follower_count'],
+    asNumber,
+  );
+  const following = firstValue(
+    stats ?? user,
+    stats ? statsPath : userPath,
+    ['followingCount', 'following_count'],
+    asNumber,
+  );
+  const friends = firstValue(
+    stats ?? user,
+    stats ? statsPath : userPath,
+    ['friendCount', 'friendsCount', 'friend_count'],
+    asNumber,
+  );
+  const hearts = firstValue(
+    stats ?? user,
+    stats ? statsPath : userPath,
+    ['heartCount', 'heart', 'totalFavorited', 'total_favorited'],
+    asNumber,
+  );
+  const videoCount = firstValue(
+    stats ?? user,
+    stats ? statsPath : userPath,
+    ['videoCount', 'awemeCount', 'aweme_count'],
+    asNumber,
+  );
+  const favoritingCount = firstValue(
+    stats ?? user,
+    stats ? statsPath : userPath,
+    ['diggCount', 'favoritingCount', 'favoriting_count'],
+    asNumber,
+  );
+  const nicknameModifiedAt = firstValue(
+    user,
+    userPath,
+    ['nicknameModifyTime', 'nickname_modify_time'],
+    epochToIso,
+  );
+  const usernameModifiedAt = firstValue(
+    user,
+    userPath,
+    ['uniqueIdModifyTime', 'unique_id_modify_time'],
+    epochToIso,
+  );
   const storyAvailable = firstValue(user, userPath, ['storyStatus', 'story_status'], (value) => {
     const status = asNumber(value);
     return status === undefined ? undefined : status > 0;
@@ -146,33 +186,148 @@ export function normalizeWebProfile(options: NormalizeWebProfileOptions) {
   };
 
   const fields = compactFields([
-    createField({ label: 'Avatar', value: data.avatar, sourceEndpoint, upstreamPath: avatar.path, retrievedAt }),
-    createField({ label: 'Avatar variants', value: data.avatarVariants, sourceEndpoint, upstreamPath: `${userPath}.avatar*`, retrievedAt }),
-    createField({ label: 'Nickname', value: data.nickname, sourceEndpoint, upstreamPath: nickname.path, retrievedAt }),
-    createField({ label: 'Username', value: data.username, sourceEndpoint, upstreamPath: username.path, retrievedAt }),
-    createField({ label: 'Permanent user ID', value: data.userId, sourceEndpoint, upstreamPath: userId.path, retrievedAt }),
-    createField({ label: 'secUid', value: data.secUid, sourceEndpoint, upstreamPath: secUid.path, retrievedAt }),
-    createField({ label: 'Signature', value: data.signature, sourceEndpoint, upstreamPath: signature.path, retrievedAt }),
-    createField({ label: 'Verified', value: data.verified, sourceEndpoint, upstreamPath: verified.path, retrievedAt }),
-    createField({ label: 'Private account', value: data.privateAccount, sourceEndpoint, upstreamPath: privateAccount.path, retrievedAt }),
-    createField({ label: 'Profile language', value: data.language, sourceEndpoint, upstreamPath: language.path, retrievedAt }),
+    createField({
+      label: 'Avatar',
+      value: data.avatar,
+      sourceEndpoint,
+      upstreamPath: avatar.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Avatar variants',
+      value: data.avatarVariants,
+      sourceEndpoint,
+      upstreamPath: `${userPath}.avatar*`,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Nickname',
+      value: data.nickname,
+      sourceEndpoint,
+      upstreamPath: nickname.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Username',
+      value: data.username,
+      sourceEndpoint,
+      upstreamPath: username.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Permanent user ID',
+      value: data.userId,
+      sourceEndpoint,
+      upstreamPath: userId.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'secUid',
+      value: data.secUid,
+      sourceEndpoint,
+      upstreamPath: secUid.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Signature',
+      value: data.signature,
+      sourceEndpoint,
+      upstreamPath: signature.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Verified',
+      value: data.verified,
+      sourceEndpoint,
+      upstreamPath: verified.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Private account',
+      value: data.privateAccount,
+      sourceEndpoint,
+      upstreamPath: privateAccount.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Profile language',
+      value: data.language,
+      sourceEndpoint,
+      upstreamPath: language.path,
+      retrievedAt,
+    }),
     createField({
       label: 'Profile region',
       value: data.region,
       sourceEndpoint,
       upstreamPath: region.path,
       retrievedAt,
-      explanation: 'This is TikTok profile-region metadata. It is not labeled as signup country or current physical location.',
+      explanation:
+        'This is TikTok profile-region metadata. It is not labeled as signup country or current physical location.',
     }),
-    createField({ label: 'Followers', value: data.followers, sourceEndpoint, upstreamPath: followers.path, retrievedAt }),
-    createField({ label: 'Following', value: data.following, sourceEndpoint, upstreamPath: following.path, retrievedAt }),
-    createField({ label: 'Friends', value: data.friends, sourceEndpoint, upstreamPath: friends.path, retrievedAt }),
-    createField({ label: 'Hearts / likes', value: data.hearts, sourceEndpoint, upstreamPath: hearts.path, retrievedAt }),
-    createField({ label: 'Video count', value: data.videoCount, sourceEndpoint, upstreamPath: videoCount.path, retrievedAt }),
-    createField({ label: 'Digg count', value: data.diggCount, sourceEndpoint, upstreamPath: favoritingCount.path, retrievedAt }),
-    createField({ label: 'Nickname modified', value: data.nicknameModifiedAt, sourceEndpoint, upstreamPath: nicknameModifiedAt.path, retrievedAt }),
-    createField({ label: 'Username modified', value: data.usernameModifiedAt, sourceEndpoint, upstreamPath: usernameModifiedAt.path, retrievedAt }),
-    createField({ label: 'Story available', value: data.storyAvailable, sourceEndpoint, upstreamPath: storyAvailable.path, retrievedAt }),
+    createField({
+      label: 'Followers',
+      value: data.followers,
+      sourceEndpoint,
+      upstreamPath: followers.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Following',
+      value: data.following,
+      sourceEndpoint,
+      upstreamPath: following.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Friends',
+      value: data.friends,
+      sourceEndpoint,
+      upstreamPath: friends.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Hearts / likes',
+      value: data.hearts,
+      sourceEndpoint,
+      upstreamPath: hearts.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Video count',
+      value: data.videoCount,
+      sourceEndpoint,
+      upstreamPath: videoCount.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Digg count',
+      value: data.diggCount,
+      sourceEndpoint,
+      upstreamPath: favoritingCount.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Nickname modified',
+      value: data.nicknameModifiedAt,
+      sourceEndpoint,
+      upstreamPath: nicknameModifiedAt.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Username modified',
+      value: data.usernameModifiedAt,
+      sourceEndpoint,
+      upstreamPath: usernameModifiedAt.path,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Story available',
+      value: data.storyAvailable,
+      sourceEndpoint,
+      upstreamPath: storyAvailable.path,
+      retrievedAt,
+    }),
   ]);
 
   const warnings: LookupIssue[] = [];

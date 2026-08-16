@@ -122,7 +122,10 @@ function recursiveFindProfile(
 
   if (
     sameUsername(value.uniqueId ?? value.unique_id, expectedUsername) &&
-    (value.id !== undefined || value.uid !== undefined || value.secUid !== undefined || value.sec_uid !== undefined)
+    (value.id !== undefined ||
+      value.uid !== undefined ||
+      value.secUid !== undefined ||
+      value.sec_uid !== undefined)
   ) {
     return { user: value, userPath: path || '$' };
   }
@@ -145,7 +148,8 @@ export function findPageProfile(
   expectedUsername: string,
 ): PageProfileCandidate {
   const scope = universalScope(page.root);
-  const detail = scope && isRecord(scope['webapp.user-detail']) ? scope['webapp.user-detail'] : undefined;
+  const detail =
+    scope && isRecord(scope['webapp.user-detail']) ? scope['webapp.user-detail'] : undefined;
   if (detail) {
     const candidate = userFromDetail(
       detail,
@@ -176,9 +180,13 @@ export function findPageProfile(
   const recursive = recursiveFindProfile(page.root, expectedUsername);
   if (recursive) return recursive;
 
-  throw new LookupError('target_missing', 'The exact requested username was absent from the TikTok page.', {
-    validationStatus: 'target_missing',
-  });
+  throw new LookupError(
+    'target_missing',
+    'The exact requested username was absent from the TikTok page.',
+    {
+      validationStatus: 'target_missing',
+    },
+  );
 }
 
 function recursiveFindPost(
@@ -219,7 +227,8 @@ function recursiveFindPost(
 
 export function findPagePost(page: TikTokPageData, awemeId: string): PagePostCandidate {
   const scope = universalScope(page.root);
-  const detail = scope && isRecord(scope['webapp.video-detail']) ? scope['webapp.video-detail'] : undefined;
+  const detail =
+    scope && isRecord(scope['webapp.video-detail']) ? scope['webapp.video-detail'] : undefined;
   const itemInfo = detail && isRecord(detail.itemInfo) ? detail.itemInfo : undefined;
   const itemStruct = itemInfo && isRecord(itemInfo.itemStruct) ? itemInfo.itemStruct : undefined;
   if (itemStruct && String(itemStruct.id ?? itemStruct.aweme_id ?? '') === awemeId) {
@@ -233,7 +242,11 @@ export function findPagePost(page: TikTokPageData, awemeId: string): PagePostCan
   const recursive = recursiveFindPost(page.root, awemeId);
   if (recursive) return recursive;
 
-  throw new LookupError('target_missing', 'The exact requested Aweme was absent from the TikTok page.', {
-    validationStatus: 'target_missing',
-  });
+  throw new LookupError(
+    'target_missing',
+    'The exact requested Aweme was absent from the TikTok page.',
+    {
+      validationStatus: 'target_missing',
+    },
+  );
 }

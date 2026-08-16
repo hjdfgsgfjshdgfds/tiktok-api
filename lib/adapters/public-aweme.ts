@@ -22,10 +22,14 @@ function validateUsername(post: Record<string, unknown>, expected?: string): voi
         : undefined
     : undefined;
   if (returned && returned.toLowerCase() !== expected.toLowerCase()) {
-    throw new LookupError('target_missing', 'The returned post author did not match the username in the URL.', {
-      detail: `Expected @${expected}; received @${returned}.`,
-      validationStatus: 'target_missing',
-    });
+    throw new LookupError(
+      'target_missing',
+      'The returned post author did not match the username in the URL.',
+      {
+        detail: `Expected @${expected}; received @${returned}.`,
+        validationStatus: 'target_missing',
+      },
+    );
   }
 }
 
@@ -76,7 +80,11 @@ async function tryPage(
   } catch (error) {
     const current = toLookupError(error);
     source.validation = current.validationStatus;
-    if (!['upstream_auth', 'upstream_malformed', 'target_missing', 'upstream_error'].includes(current.code)) {
+    if (
+      !['upstream_auth', 'upstream_malformed', 'target_missing', 'upstream_error'].includes(
+        current.code,
+      )
+    ) {
       throw current;
     }
     raw.pageFailure = { code: current.code, message: current.message, detail: current.detail };

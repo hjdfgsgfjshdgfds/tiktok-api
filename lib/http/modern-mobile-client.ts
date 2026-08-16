@@ -21,7 +21,9 @@ function decimalId(length = 19): string {
 }
 
 function hex(length: number): string {
-  return randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length);
+  return randomBytes(Math.ceil(length / 2))
+    .toString('hex')
+    .slice(0, length);
 }
 
 function baseParams(region: string): URLSearchParams {
@@ -73,9 +75,13 @@ function parseJson(response: BoundedResponse): Record<string, unknown> {
     return parsed;
   } catch (error) {
     if (error instanceof LookupError) throw error;
-    throw new LookupError('upstream_malformed', 'TikTok mobile response contained malformed JSON.', {
-      cause: error,
-    });
+    throw new LookupError(
+      'upstream_malformed',
+      'TikTok mobile response contained malformed JSON.',
+      {
+        cause: error,
+      },
+    );
   }
 }
 

@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  extractTikTokPageData,
-  findPagePost,
-  findPageProfile,
-} from '@/lib/html/tiktok-page';
+import { extractTikTokPageData, findPagePost, findPageProfile } from '@/lib/html/tiktok-page';
 
 function page(payload: unknown): string {
   return `<html><body><script id="__UNIVERSAL_DATA_FOR_REHYDRATION__" type="application/json">${JSON.stringify(payload)}</script></body></html>`;
@@ -57,8 +53,6 @@ describe('TikTok page rehydration parsing', () => {
         },
       }),
     );
-    expect(findPagePost(parsed, '7399999999999999991').post.id).toBe(
-      '7399999999999999991',
-    );
+    expect(findPagePost(parsed, '7399999999999999991').post.id).toBe('7399999999999999991');
   });
 });

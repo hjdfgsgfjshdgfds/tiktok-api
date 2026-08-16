@@ -25,7 +25,8 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     status: 'enabled',
     productionEnabled: true,
     successCondition: 'HTTP 200 HTML containing an exact itemStruct/ItemModule candidate',
-    targetValidation: 'Item ID must equal the requested Aweme ID; URL username is checked when returned',
+    targetValidation:
+      'Item ID must equal the requested Aweme ID; URL username is checked when returned',
     evidence: 'Page-data capture ledger and public TikTok video-page behavior',
     note: 'Default no-login video URL lookup, with the modern mobile target-feed as a fallback.',
   },
@@ -52,9 +53,11 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     identifier: 'user_id',
     status: 'experimental',
     productionEnabled: true,
-    successCondition: 'HTTP success and a parseable profile object inside the response component tree',
+    successCondition:
+      'HTTP success and a parseable profile object inside the response component tree',
     targetValidation: 'A returned id/uid must exactly equal the requested user ID',
-    evidence: 'Recent public source implementation in vit4Ss/ApiDemo; current compatibility requires probing',
+    evidence:
+      'Recent public source implementation in vit4Ss/ApiDemo; current compatibility requires probing',
     note: 'No-login numeric-ID lookup. It is enabled but visibly labeled experimental because this request family is less stable.',
   },
   {
@@ -109,7 +112,8 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     status: 'evidence-only',
     productionEnabled: false,
     successCondition: 'TikTok success with comments, cursor, has_more, and optional total',
-    targetValidation: 'Displayed comments must belong to the requested Aweme where aweme_id is supplied',
+    targetValidation:
+      'Displayed comments must belong to the requested Aweme where aweme_id is supplied',
     evidence: 'Live read-only browser capture and maintained web clients',
     note: 'Exact route is known; signed request construction is intentionally not faked.',
   },
@@ -123,7 +127,8 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     status: 'evidence-only',
     productionEnabled: false,
     successCondition: 'TikTok success and nonempty itemList',
-    targetValidation: 'Generate a fresh signature for the exact itemID; never modify a captured signed URL',
+    targetValidation:
+      'Generate a fresh signature for the exact itemID; never modify a captured signed URL',
     evidence: 'Live browser capture; replay reported unstable when target changed',
     note: 'Related results are recommendations, not the requested target itself.',
   },
@@ -137,7 +142,8 @@ export const ENDPOINT_CAPABILITIES: EndpointCapability[] = [
     status: 'evidence-only',
     productionEnabled: false,
     successCondition: 'TikTok success with storyUsers and cursor state',
-    targetValidation: 'A videoCount change is only a signal; resolve an exact Story item before claiming a result',
+    targetValidation:
+      'A videoCount change is only a signal; resolve an exact Story item before claiming a result',
     evidence: 'Live verified and repeatedly replayed in the supplied endpoint ledger',
     note: 'Read-only Story evidence exists; the old “Story unsupported” claim was incorrect.',
   },

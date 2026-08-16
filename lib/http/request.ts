@@ -41,7 +41,10 @@ function mapNetworkError(error: unknown): never {
 
 function assertStatus(response: Response): void {
   if (response.status === 401 || response.status === 403) {
-    throw new LookupError('upstream_auth', `TikTok rejected the request with HTTP ${response.status}.`);
+    throw new LookupError(
+      'upstream_auth',
+      `TikTok rejected the request with HTTP ${response.status}.`,
+    );
   }
   if (response.status === 429) {
     throw new LookupError('upstream_rate_limited', 'TikTok rate-limited the request.', {
@@ -50,9 +53,14 @@ function assertStatus(response: Response): void {
     });
   }
   if (response.status >= 300 && response.status < 400) {
-    throw new LookupError('upstream_auth', `TikTok redirected the request with HTTP ${response.status}.`, {
-      detail: 'A redirect from a fixed lookup endpoint usually indicates a challenge or missing request context.',
-    });
+    throw new LookupError(
+      'upstream_auth',
+      `TikTok redirected the request with HTTP ${response.status}.`,
+      {
+        detail:
+          'A redirect from a fixed lookup endpoint usually indicates a challenge or missing request context.',
+      },
+    );
   }
   if (!response.ok) {
     throw new LookupError('upstream_error', `TikTok returned HTTP ${response.status}.`);
@@ -68,19 +76,30 @@ function assertFinalUrl(response: Response, allowedHosts?: readonly string[]): v
     throw new LookupError('upstream_malformed', 'TikTok returned an invalid final response URL.');
   }
   if (final.protocol !== 'https:' || !allowedHosts.includes(final.hostname.toLowerCase())) {
-    throw new LookupError('upstream_auth', 'TikTok redirected the lookup outside the allowed host.', {
-      detail: `Final host: ${final.hostname || 'unknown'}`,
-    });
+    throw new LookupError(
+      'upstream_auth',
+      'TikTok redirected the lookup outside the allowed host.',
+      {
+        detail: `Final host: ${final.hostname || 'unknown'}`,
+      },
+    );
   }
 }
 
-function assertContentType(contentType: string, expected: BoundedFetchOptions['expectedContent']): void {
+function assertContentType(
+  contentType: string,
+  expected: BoundedFetchOptions['expectedContent'],
+): void {
   if (!expected || expected === 'any') return;
   const normalized = contentType.toLowerCase();
   if (expected === 'html' && !normalized.includes('text/html')) {
-    throw new LookupError('upstream_malformed', 'TikTok returned a non-HTML profile or post page.', {
-      detail: `Content-Type: ${contentType || 'missing'}`,
-    });
+    throw new LookupError(
+      'upstream_malformed',
+      'TikTok returned a non-HTML profile or post page.',
+      {
+        detail: `Content-Type: ${contentType || 'missing'}`,
+      },
+    );
   }
   if (
     expected === 'json' &&
@@ -98,7 +117,10 @@ function assertContentType(contentType: string, expected: BoundedFetchOptions['e
 async function readBoundedBody(response: Response, maxBytes: number): Promise<Uint8Array> {
   const declaredLength = Number(response.headers.get('content-length') ?? '0');
   if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
-    throw new LookupError('upstream_malformed', 'TikTok returned a response larger than the configured limit.');
+    throw new LookupError(
+      'upstream_malformed',
+      'TikTok returned a response larger than the configured limit.',
+    );
   }
 
   if (!response.body) return new Uint8Array();

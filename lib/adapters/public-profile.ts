@@ -55,10 +55,18 @@ function deepFind(
 function extractMobileProfile(
   data: Record<string, unknown>,
   requestedUserId: string,
-): { user: Record<string, unknown>; stats?: Record<string, unknown>; path: string; statsPath?: string } {
+): {
+  user: Record<string, unknown>;
+  stats?: Record<string, unknown>;
+  path: string;
+  statsPath?: string;
+} {
   const code = statusFromEnvelope(data);
   if (code !== undefined && code !== 0) {
-    throw new LookupError('upstream_error', `TikTok returned status ${code} for the profile request.`);
+    throw new LookupError(
+      'upstream_error',
+      `TikTok returned status ${code} for the profile request.`,
+    );
   }
 
   const exact = deepFind(data, (candidate) => {
@@ -69,9 +77,13 @@ function extractMobileProfile(
     );
   });
   if (!exact) {
-    throw new LookupError('target_missing', 'The requested user ID was absent from the mobile profile response.', {
-      validationStatus: 'target_missing',
-    });
+    throw new LookupError(
+      'target_missing',
+      'The requested user ID was absent from the mobile profile response.',
+      {
+        validationStatus: 'target_missing',
+      },
+    );
   }
 
   const stats = deepFind(data, (candidate) => {

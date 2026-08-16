@@ -73,7 +73,11 @@ const envSchema = z.object({
   RATE_LIMIT_MAX: integerFromString(1, 1000).default(30),
   RATE_LIMIT_WINDOW_SECONDS: integerFromString(1, 3600).default(60),
   UPSTREAM_COOLDOWN_SECONDS: integerFromString(1, 3600).default(60),
-  PUBLIC_TIKTOK_REGION: z.string().trim().regex(/^[A-Z]{2}$/).default('US'),
+  PUBLIC_TIKTOK_REGION: z
+    .string()
+    .trim()
+    .regex(/^[A-Z]{2}$/)
+    .default('US'),
   PUBLIC_TIKTOK_USER_AGENT: z
     .string()
     .min(20)

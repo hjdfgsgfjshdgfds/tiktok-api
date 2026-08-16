@@ -25,7 +25,10 @@ function asNumber(value: unknown): number | undefined {
   return undefined;
 }
 
-function readNumber(record: Record<string, unknown> | undefined, ...keys: string[]): number | undefined {
+function readNumber(
+  record: Record<string, unknown> | undefined,
+  ...keys: string[]
+): number | undefined {
   for (const key of keys) {
     const value = asNumber(record?.[key]);
     if (value !== undefined) return value;
@@ -33,7 +36,10 @@ function readNumber(record: Record<string, unknown> | undefined, ...keys: string
   return undefined;
 }
 
-function readString(record: Record<string, unknown> | undefined, ...keys: string[]): string | undefined {
+function readString(
+  record: Record<string, unknown> | undefined,
+  ...keys: string[]
+): string | undefined {
   for (const key of keys) {
     const value = asString(record?.[key]);
     if (value !== undefined) return value;
@@ -180,20 +186,63 @@ export function normalizeWebPost(options: NormalizeWebPostOptions) {
   };
 
   const fields = compactFields([
-    createField({ label: 'Cover image', value: data.cover, sourceEndpoint, upstreamPath: `${rootPath}.video.cover.urlList[0]`, retrievedAt }),
-    createField({ label: 'Aweme ID', value: data.awemeId, sourceEndpoint, upstreamPath: `${rootPath}.id`, retrievedAt }),
-    createField({ label: 'Description', value: data.description, sourceEndpoint, upstreamPath: `${rootPath}.desc`, retrievedAt }),
-    createField({ label: 'Created', value: data.createdAt, sourceEndpoint, upstreamPath: `${rootPath}.createTime`, retrievedAt }),
-    createField({ label: 'Author username', value: data.authorUsername, sourceEndpoint, upstreamPath: `${rootPath}.author.uniqueId`, retrievedAt }),
-    createField({ label: 'Author user ID', value: data.authorUserId, sourceEndpoint, upstreamPath: `${rootPath}.author.id`, retrievedAt }),
-    createField({ label: 'Author secUid', value: data.authorSecUid, sourceEndpoint, upstreamPath: `${rootPath}.author.secUid`, retrievedAt }),
+    createField({
+      label: 'Cover image',
+      value: data.cover,
+      sourceEndpoint,
+      upstreamPath: `${rootPath}.video.cover.urlList[0]`,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Aweme ID',
+      value: data.awemeId,
+      sourceEndpoint,
+      upstreamPath: `${rootPath}.id`,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Description',
+      value: data.description,
+      sourceEndpoint,
+      upstreamPath: `${rootPath}.desc`,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Created',
+      value: data.createdAt,
+      sourceEndpoint,
+      upstreamPath: `${rootPath}.createTime`,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Author username',
+      value: data.authorUsername,
+      sourceEndpoint,
+      upstreamPath: `${rootPath}.author.uniqueId`,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Author user ID',
+      value: data.authorUserId,
+      sourceEndpoint,
+      upstreamPath: `${rootPath}.author.id`,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Author secUid',
+      value: data.authorSecUid,
+      sourceEndpoint,
+      upstreamPath: `${rootPath}.author.secUid`,
+      retrievedAt,
+    }),
     createField({
       label: 'Selected Aweme region',
       value: data.postRegion,
       sourceEndpoint,
       upstreamPath: `${rootPath}.region`,
       retrievedAt,
-      explanation: 'The selected content region is kept separate from author profile region and is not called account origin.',
+      explanation:
+        'The selected content region is kept separate from author profile region and is not called account origin.',
     }),
     createField({
       label: 'Author region',
@@ -203,8 +252,20 @@ export function normalizeWebPost(options: NormalizeWebPostOptions) {
       retrievedAt,
       explanation: 'This is author metadata, not proof of signup country or current location.',
     }),
-    createField({ label: 'Statistics', value: data.statistics, sourceEndpoint, upstreamPath: `${rootPath}.statsV2`, retrievedAt }),
-    createField({ label: 'Duration', value: data.durationMs, sourceEndpoint, upstreamPath: `${rootPath}.video.duration`, retrievedAt }),
+    createField({
+      label: 'Statistics',
+      value: data.statistics,
+      sourceEndpoint,
+      upstreamPath: `${rootPath}.statsV2`,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Duration',
+      value: data.durationMs,
+      sourceEndpoint,
+      upstreamPath: `${rootPath}.video.duration`,
+      retrievedAt,
+    }),
     createField({
       label: 'Content type',
       value: data.contentType,
@@ -214,17 +275,36 @@ export function normalizeWebPost(options: NormalizeWebPostOptions) {
       status: 'derived',
       origin: 'local',
     }),
-    createField({ label: 'Aweme type', value: data.awemeType, sourceEndpoint, upstreamPath: `${rootPath}.awemeType`, retrievedAt }),
-    createField({ label: 'Music', value: data.music, sourceEndpoint, upstreamPath: `${rootPath}.music`, retrievedAt }),
+    createField({
+      label: 'Aweme type',
+      value: data.awemeType,
+      sourceEndpoint,
+      upstreamPath: `${rootPath}.awemeType`,
+      retrievedAt,
+    }),
+    createField({
+      label: 'Music',
+      value: data.music,
+      sourceEndpoint,
+      upstreamPath: `${rootPath}.music`,
+      retrievedAt,
+    }),
     createField({
       label: 'Playback / download URLs',
       value: data.playbackUrls,
       sourceEndpoint,
       upstreamPath: `${rootPath}.video.playAddr.urlList`,
       retrievedAt,
-      explanation: 'Only allowlisted HTTPS media hosts are exposed; volatile authorization parameters are redacted.',
+      explanation:
+        'Only allowlisted HTTPS media hosts are exposed; volatile authorization parameters are redacted.',
     }),
-    createField({ label: 'Download allowed', value: data.downloadAllowed, sourceEndpoint, upstreamPath: `${rootPath}.prevent_download`, retrievedAt }),
+    createField({
+      label: 'Download allowed',
+      value: data.downloadAllowed,
+      sourceEndpoint,
+      upstreamPath: `${rootPath}.prevent_download`,
+      retrievedAt,
+    }),
     createField({
       label: 'Post classification',
       value: data.classification,
