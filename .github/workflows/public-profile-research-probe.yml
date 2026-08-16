@@ -1,0 +1,195 @@
+name: Public profile research probe
+
+on:
+  push:
+    branches:
+      - research/unauthenticated-user-lookup
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Probe public, unauthenticated profile surfaces
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run bounded public endpoint probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p probe-output
+
+          node <<'NODE'
+          const fs = require('node:fs/promises');
+          const path = require('node:path');
+          const { URL } = require('node:url');
+
+          const outputDir = path.resolve('probe-output');
+          const maxBytes = 2 * 1024 * 1024;
+          const userAgent =
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ' +
+            '(KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36';
+
+          async function boundedFetch(label, url, extraHeaders = {}) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 20_000);
+            const startedAt = Date.now();
+            try {
+              const response = await fetch(url, {
+                redirect: 'manual',
+                signal: controller.signal,
+                headers: {
+                  'user-agent': userAgent,
+                  accept: 'text/html,application/json;q=0.9,*/*;q=0.8',
+                  'accept-language': 'en-US,en;q=0.9',
+                  'accept-encoding': 'identity',
+                  ...extraHeaders,
+                },
+              });
+              const buffer = Buffer.from(await response.arrayBuffer());
+              const clipped = buffer.subarray(0, maxBytes);
+              await fs.writeFile(path.join(outputDir, `${label}.body`), clipped);
+              const metadata = {
+                label,
+                url,
+                status: response.status,
+                redirected: response.status >= 300 && response.status < 400,
+                location: response.headers.get('location'),
+                contentType: response.headers.get('content-type'),
+                contentLength: response.headers.get('content-length'),
+                receivedBytes: buffer.length,
+                savedBytes: clipped.length,
+                elapsedMs: Date.now() - startedAt,
+                headers: Object.fromEntries(response.headers.entries()),
+              };
+              await fs.writeFile(
+                path.join(outputDir, `${label}.json`),
+                `${JSON.stringify(metadata, null, 2)}\n`,
+              );
+              return { ...metadata, body: clipped.toString('utf8') };
+            } catch (error) {
+              const metadata = {
+                label,
+                url,
+                error: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+                elapsedMs: Date.now() - startedAt,
+              };
+              await fs.writeFile(
+                path.join(outputDir, `${label}.json`),
+                `${JSON.stringify(metadata, null, 2)}\n`,
+              );
+              return metadata;
+            } finally {
+              clearTimeout(timer);
+            }
+          }
+
+          function safeAssetName(url, index) {
+            const parsed = new URL(url);
+            const basename = path.basename(parsed.pathname) || 'asset';
+            return `omar-asset-${String(index).padStart(2, '0')}-${basename}`.replace(
+              /[^A-Za-z0-9._-]/g,
+              '_',
+            );
+          }
+
+          (async () => {
+            const username = 'loreleiqiyoku';
+            const profileUrl = `https://www.tiktok.com/@${username}`;
+            const targets = [
+              ['omar-home', 'https://omar-thing.site/'],
+              [
+                'tiktok-oembed-profile',
+                `https://www.tiktok.com/oembed?url=${encodeURIComponent(profileUrl)}`,
+              ],
+              ['tiktok-profile-page', profileUrl],
+              ['tiktok-node-share', `https://www.tiktok.com/node/share/user/@${username}`],
+              ['tiktok-mobile-node-share', `https://m.tiktok.com/node/share/user/@${username}`],
+              [
+                'tiktok-web-user-detail-unsigned',
+                `https://www.tiktok.com/api/user/detail/?aid=1988&uniqueId=${username}`,
+              ],
+            ];
+
+            const results = [];
+            for (const [label, url] of targets) {
+              results.push(await boundedFetch(label, url));
+            }
+
+            const omar = results.find((entry) => entry.label === 'omar-home');
+            const discoveredAssets = [];
+            if (omar && typeof omar.body === 'string') {
+              const patterns = [
+                /<script[^>]+src=["']([^"']+)["']/gi,
+                /<link[^>]+href=["']([^"']+\.js(?:\?[^"']*)?)["']/gi,
+              ];
+              const seen = new Set();
+              for (const pattern of patterns) {
+                for (const match of omar.body.matchAll(pattern)) {
+                  const assetUrl = new URL(match[1], 'https://omar-thing.site/').toString();
+                  if (!seen.has(assetUrl)) {
+                    seen.add(assetUrl);
+                    discoveredAssets.push(assetUrl);
+                  }
+                }
+              }
+            }
+
+            const assetResults = [];
+            for (let index = 0; index < Math.min(discoveredAssets.length, 20); index += 1) {
+              const assetUrl = discoveredAssets[index];
+              const label = safeAssetName(assetUrl, index + 1);
+              assetResults.push(await boundedFetch(label, assetUrl));
+            }
+
+            const endpointPattern = /(?:https?:\\?\/\\?\/[^"'`\s<>)]+|\/[A-Za-z0-9_.~!$&'()*+,;=:@%/-]*(?:api|user|profile|lookup|search)[A-Za-z0-9_.~!$&'()*+,;=:@%/?-]*)/gi;
+            const interesting = [];
+            for (const result of [omar, ...assetResults]) {
+              if (!result || typeof result.body !== 'string') continue;
+              const matches = result.body.match(endpointPattern) ?? [];
+              for (const match of matches) {
+                const normalized = match.replace(/\\\//g, '/');
+                if (!interesting.includes(normalized)) interesting.push(normalized);
+                if (interesting.length >= 500) break;
+              }
+              if (interesting.length >= 500) break;
+            }
+
+            const summary = {
+              generatedAt: new Date().toISOString(),
+              username,
+              results: results.map(({ body, ...metadata }) => metadata),
+              discoveredAssets,
+              assetResults: assetResults.map(({ body, ...metadata }) => metadata),
+              interestingStrings: interesting,
+            };
+            await fs.writeFile(
+              path.join(outputDir, 'probe-summary.json'),
+              `${JSON.stringify(summary, null, 2)}\n`,
+            );
+            console.log(JSON.stringify(summary, null, 2));
+          })().catch((error) => {
+            console.error(error);
+            process.exitCode = 1;
+          });
+          NODE
+
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-profile-research-probe
+          path: probe-output
+          if-no-files-found: error
+          retention-days: 7
