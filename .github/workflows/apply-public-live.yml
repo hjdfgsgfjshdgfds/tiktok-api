@@ -1,0 +1,49 @@
+name: Apply public-live implementation
+
+on:
+  push:
+    branches:
+      - research/omar-feature-parity
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ hashFiles('tools/apply-public-live.py') != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/omar-feature-parity
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Apply complete public-live source patch
+        run: python3 tools/apply-public-live.py
+
+      - name: Install, format, and verify
+        env:
+          LOOKUP_MODE: public-live
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: |
+          npm ci --no-audit --no-fund
+          npm run format
+          npm run lint
+          npm run typecheck
+          npm run test -- --reporter=verbose
+          npm run build
+
+      - name: Commit verified implementation
+        run: |
+          rm -f tools/apply-public-live.py .github/workflows/apply-public-live.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat: enable real public TikTok lookups by default'
+          git push origin HEAD:research/omar-feature-parity
